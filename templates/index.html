@@ -1,1 +1,53 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+<title>Quizard</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="header">
+<h1>QUIZARD</h1>
+</div>
+
+<input type="text" id="search"
+placeholder="Search Batch..."
+onkeyup="searchBatch()">
+
+<div id="batches">
+
+{% for batch in batches %}
+<div class="card">
+<h2>{{ batch.name }}</h2>
+
+<button>Tests</button>
+<button>DPP</button>
+
+</div>
+{% endfor %}
+
+</div>
+
+<script>
+function searchBatch() {
+let input =
+document.getElementById("search")
+.value.toLowerCase();
+
+let cards =
+document.querySelectorAll(".card");
+
+cards.forEach(card=>{
+if(card.innerText.toLowerCase()
+.includes(input)){
+card.style.display="block";
+}else{
+card.style.display="none";
+}
+});
+}
+</script>
+
+</body>
+</html>
