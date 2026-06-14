@@ -1,36 +1,104 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Quizard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUIZARD</title>
+
 <link rel="stylesheet" href="/static/style.css">
+
+<style>
+body{
+background:#111827;
+font-family:Arial,sans-serif;
+color:white;
+margin:0;
+padding:20px;
+}
+
+.header{
+text-align:center;
+margin-bottom:20px;
+}
+
+#search{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+font-size:16px;
+margin-bottom:20px;
+outline:none;
+}
+
+.card{
+background:#1f2937;
+padding:20px;
+border-radius:15px;
+margin-bottom:15px;
+}
+
+.card h2{
+margin:0 0 15px 0;
+}
+
+.btn{
+display:inline-block;
+padding:10px 15px;
+background:#2563eb;
+color:white;
+text-decoration:none;
+border-radius:10px;
+margin-right:10px;
+}
+
+.btn:hover{
+opacity:.9;
+}
+</style>
+
 </head>
 <body>
 
 <div class="header">
 <h1>QUIZARD</h1>
+<p>Test Series & DPP Portal</p>
 </div>
 
-<input type="text" id="search"
+<input
+type="text"
+id="search"
 placeholder="Search Batch..."
 onkeyup="searchBatch()">
 
 <div id="batches">
 
 {% for batch in batches %}
+
 <div class="card">
+
 <h2>{{ batch.name }}</h2>
 
-<button>Tests</button>
-<button>DPP</button>
+<a class="btn"
+href="/tests/{{ batch.name }}">
+Tests
+</a>
+
+<a class="btn"
+href="/dpp/{{ batch.name }}">
+DPP
+</a>
 
 </div>
+
 {% endfor %}
 
 </div>
 
 <script>
-function searchBatch() {
+
+function searchBatch(){
+
 let input =
 document.getElementById("search")
 .value.toLowerCase();
@@ -39,14 +107,21 @@ let cards =
 document.querySelectorAll(".card");
 
 cards.forEach(card=>{
-if(card.innerText.toLowerCase()
-.includes(input)){
+
+if(
+card.innerText
+.toLowerCase()
+.includes(input)
+){
 card.style.display="block";
 }else{
 card.style.display="none";
 }
+
 });
+
 }
+
 </script>
 
 </body>
