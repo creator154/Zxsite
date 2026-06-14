@@ -1,17 +1,31 @@
-
 from flask import Flask, render_template
 
 app = Flask(__name__)
 
-batches = [
-    {"id": 1, "name": "Yakeen NEET Hindi 2027"},
-    {"id": 2, "name": "Yakeen NEET English 2027"},
-    {"id": 3, "name": "Lakshya NEET 2027"}
-]
-
 @app.route("/")
 def home():
-    return render_template("index.html", batches=batches)
+    return render_template("index.html")
+
+@app.route("/batch/<batch>")
+def batch(batch):
+    return render_template(
+        "batch.html",
+        batch=batch
+    )
+
+@app.route("/tests/<batch>")
+def tests(batch):
+    return render_template(
+        "tests.html",
+        batch=batch
+    )
+
+@app.route("/dpp/<batch>")
+def dpp(batch):
+    return render_template(
+        "dpp.html",
+        batch=batch
+    )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
