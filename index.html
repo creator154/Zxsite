@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rare Study</title>
+<title>RARE STUDY</title>
 
 <style>
 *{
@@ -14,122 +14,142 @@ font-family:Arial,sans-serif;
 }
 
 body{
-background:#0f172a;
+background:#071229;
 color:white;
 padding:20px;
 }
 
 .logo{
 text-align:center;
-font-size:32px;
+font-size:40px;
 font-weight:bold;
-margin-bottom:20px;
+margin:20px 0;
 }
 
 .search{
 width:100%;
-padding:12px;
+padding:15px;
 border:none;
-border-radius:10px;
+border-radius:15px;
+font-size:18px;
 margin-bottom:20px;
-font-size:16px;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:15px;
 }
 
 .card{
-background:#1e293b;
+background:#16233f;
 padding:20px;
-border-radius:15px;
-transition:.3s;
+border-radius:20px;
+margin-bottom:20px;
 }
 
-.card:hover{
-transform:translateY(-5px);
-}
-
-.card h3{
+.card h2{
 margin-bottom:10px;
 }
 
 .btn{
 display:inline-block;
-padding:10px 15px;
+margin-top:15px;
+padding:12px 20px;
 background:#2563eb;
 color:white;
 text-decoration:none;
-border-radius:8px;
-margin-top:10px;
+border-radius:12px;
 }
 
-.telegram{
-display:block;
-text-align:center;
-margin-top:25px;
-padding:12px;
-background:#0088cc;
+.batch{
+display:none;
+background:#16233f;
+padding:20px;
+border-radius:20px;
+margin-top:20px;
+}
+
+.lecture{
+background:#223456;
+padding:15px;
+margin:10px 0;
 border-radius:10px;
-text-decoration:none;
+}
+
+.lecture a{
 color:white;
-font-weight:bold;
+text-decoration:none;
 }
 </style>
 </head>
-
 <body>
 
 <div class="logo">📚 RARE STUDY</div>
 
-<input
-type="text"
-class="search"
-id="search"
-placeholder="Search Batch..."
-onkeyup="searchBatch()">
-
-<div class="grid" id="batches">
+<input type="text" class="search" placeholder="Search Batch..." id="search" onkeyup="searchBatch()">
 
 <div class="card">
-<h3>Yakeen NEET Hindi 2027</h3>
+<h2>Yakeen NEET Hindi 2027</h2>
 <p>Physics • Chemistry • Biology</p>
-<a href="#" class="btn">Open Batch</a>
+<a href="#" class="btn" onclick="openBatch('yakeen')">Open Batch</a>
 </div>
 
 <div class="card">
-<h3>Yakeen NEET English 2027</h3>
+<h2>Lakshya NEET 2027</h2>
 <p>Physics • Chemistry • Biology</p>
-<a href="#" class="btn">Open Batch</a>
+<a href="#" class="btn" onclick="openBatch('lakshya')">Open Batch</a>
 </div>
 
-<div class="card">
-<h3>Lakshya NEET 2027</h3>
-<p>Physics • Chemistry • Biology</p>
-<a href="#" class="btn">Open Batch</a>
+<div id="yakeen" class="batch">
+<h2>Yakeen NEET Hindi 2027</h2>
+
+<div class="lecture">
+<a href="#">📹 Biology Lecture 01</a>
 </div>
 
-<div class="card">
-<h3>Arjuna NEET 2028</h3>
-<p>Physics • Chemistry • Biology</p>
-<a href="#" class="btn">Open Batch</a>
+<div class="lecture">
+<a href="#">📹 Physics Lecture 01</a>
+</div>
+
+<div class="lecture">
+<a href="#">📹 Chemistry Lecture 01</a>
 </div>
 
 </div>
 
-<a href="https://t.me/yourchannel" class="telegram">
-Join Telegram
-</a>
+<div id="lakshya" class="batch">
+<h2>Lakshya NEET 2027</h2>
+
+<div class="lecture">
+<a href="#">📹 Biology Lecture</a>
+</div>
+
+<div class="lecture">
+<a href="#">📹 Physics Lecture</a>
+</div>
+
+</div>
 
 <script>
-function searchBatch() {
-let input = document.getElementById("search").value.toLowerCase();
-let cards = document.getElementsByClassName("card");
+
+function openBatch(id){
+
+document.querySelectorAll('.batch').forEach(x=>{
+x.style.display='none';
+});
+
+document.getElementById(id).style.display='block';
+
+window.scrollTo({
+top:document.getElementById(id).offsetTop-20,
+behavior:'smooth'
+});
+}
+
+function searchBatch(){
+
+let input=document.getElementById("search").value.toLowerCase();
+
+let cards=document.getElementsByClassName("card");
 
 for(let i=0;i<cards.length;i++){
-let text = cards[i].innerText.toLowerCase();
+
+let text=cards[i].innerText.toLowerCase();
 
 if(text.includes(input)){
 cards[i].style.display="";
@@ -141,4 +161,4 @@ cards[i].style.display="none";
 </script>
 
 </body>
-  </html>
+</html>
