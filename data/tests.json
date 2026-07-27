@@ -1,0 +1,16 @@
+[
+  {
+    "id": "test001",
+    "batch_id": "yakeen-neet-hindi-2027",
+    "subject": "physics",
+    "chapter": "Motion",
+    "title": "Practice Test 01",
+    "type": "Practice Test",
+    "questions": 180,
+    "duration": 180,
+    "marks": 720,
+    "thumbnail": "/static/images/thumbnails/test1.jpg",
+    "url": "",
+    "status": true
+  }
+]
