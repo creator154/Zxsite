@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ test.title }}{% endblock %}
+
+{% block content %}
+
+<div id="loader">
+
+<h2>Loading Test...</h2>
+
+</div>
+
+<div id="player-container">
+
+<iframe
+id="player"
+src="{{ test.url }}"
+allowfullscreen
+loading="lazy">
+</iframe>
+
+</div>
+
+<script>
+
+const frame=document.getElementById("player");
+
+frame.onload=function(){
+
+document.getElementById("loader").style.display="none";
+
+document.getElementById("player-container").style.display="block";
+
+};
+
+function fullscreen(){
+
+const iframe=document.getElementById("player");
+
+if(iframe.requestFullscreen){
+
+iframe.requestFullscreen();
+
+}
+
+}
+
+</script>
+
+{% endblock %}
