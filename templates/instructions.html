@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Instructions{% endblock %}
+
+{% block content %}
+
+<section class="container instructions">
+
+<h1>{{ test.title }}</h1>
+
+<div class="info">
+
+<p><strong>Questions:</strong> {{ test.questions }}</p>
+
+<p><strong>Duration:</strong> {{ test.duration }} Minutes</p>
+
+<p><strong>Maximum Marks:</strong> {{ test.marks }}</p>
+
+<p><strong>Language:</strong> {{ test.language }}</p>
+
+</div>
+
+<h2>Instructions</h2>
+
+<ul>
+
+<li>Read every question carefully.</li>
+
+<li>Do not refresh the page during the test.</li>
+
+<li>Internet connection should remain active.</li>
+
+<li>Submit the test before time ends.</li>
+
+<li>Use fullscreen mode for the best experience.</li>
+
+</ul>
+
+<br>
+
+<a class="start-btn" href="/player/{{ test.id }}">
+
+Start Test
+
+</a>
+
+</section>
+
+{% endblock %}
