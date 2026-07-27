@@ -1,0 +1,26 @@
+[
+  {
+    "id": "physics",
+    "name": "Physics",
+    "icon": "/static/icons/physics.png",
+    "color": "#4CAF50"
+  },
+  {
+    "id": "chemistry",
+    "name": "Chemistry",
+    "icon": "/static/icons/chemistry.png",
+    "color": "#2196F3"
+  },
+  {
+    "id": "biology",
+    "name": "Biology",
+    "icon": "/static/icons/biology.png",
+    "color": "#E91E63"
+  },
+  {
+    "id": "mathematics",
+    "name": "Mathematics",
+    "icon": "/static/icons/maths.png",
+    "color": "#FF9800"
+  }
+]
