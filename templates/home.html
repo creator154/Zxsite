@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>NEET Test Portal</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<h1>NEET Test Portal</h1>
+
+<div class="grid">
+
+{% for batch in batches %}
+
+<div class="card">
+
+<img src="{{ batch.thumbnail }}">
+
+<h2>{{ batch.title }}</h2>
+
+<a href="/batch/{{ batch.id }}">
+Open
+</a>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</body>
+</html>
