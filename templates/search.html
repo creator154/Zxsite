@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+Search
+{% endblock %}
+
+{% block content %}
+
+<section class="search-page">
+
+<div class="container">
+
+<h2>Search Batches</h2>
+
+<input
+type="text"
+id="searchInput"
+placeholder="Search Batch..."
+>
+
+<div id="searchResults">
+
+{% for batch in batches %}
+
+<div class="batch-card">
+
+<img src="{{ batch.thumbnail }}">
+
+<div>
+
+<h3>{{ batch.name }}</h3>
+
+<p>{{ batch.category }}</p>
+
+<a href="/batch/{{ batch.id }}">
+Open
+</a>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</section>
+
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+
+{% endblock %}
