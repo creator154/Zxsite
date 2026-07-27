@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>{{ batch }}</title>
-<link rel="stylesheet"
-href="/static/style.css">
+
+<title>{{ batch.title }}</title>
+
+<link rel="stylesheet" href="/static/css/style.css">
+
 </head>
+
 <body>
 
-<h1>{{ batch }}</h1>
+<h1>{{ batch.title }}</h1>
 
-<div class="card">
-<h2>Tests</h2>
-<a href="/tests/{{ batch }}">
-Open Tests
-</a>
+{% for test in batch.tests %}
+
+<div class="test">
+
+{{ test.title }}
+
 </div>
 
-<div class="card">
-<h2>DPP</h2>
-<a href="/dpp/{{ batch }}">
-Open DPP
-</a>
-</div>
+{% endfor %}
 
 </body>
+
 </html>
