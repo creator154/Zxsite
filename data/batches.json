@@ -1,0 +1,29 @@
+[
+  {
+    "id": "yakeen_hindi_2027",
+    "title": "Yakeen NEET Hindi 2027",
+    "thumbnail": "/static/images/yakeen.jpg",
+    "tests": [
+      {
+        "id": "pt01",
+        "title": "Practice Test-01"
+      },
+      {
+        "id": "pt02",
+        "title": "Practice Test-02"
+      }
+    ]
+  },
+  {
+    "id": "lakshya_hindi_2027",
+    "title": "Lakshya JEE Hindi 2027",
+    "thumbnail": "/static/images/lakshya.jpg",
+    "tests": []
+  },
+  {
+    "id": "arjuna_hindi_2027",
+    "title": "Arjuna NEET Hindi 2027",
+    "thumbnail": "/static/images/arjuna.jpg",
+    "tests": []
+  }
+]
