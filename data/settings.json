@@ -1,0 +1,17 @@
+{
+  "site_name": "Test Portal",
+  "site_logo": "/static/images/logo.png",
+  "site_banner": "/static/images/banner.png",
+  "site_description": "Online Test Portal",
+  "theme": "dark",
+  "language": "en",
+  "maintenance": false,
+  "allow_search": true,
+  "allow_guest": true,
+  "show_results": true,
+  "show_answers": false,
+  "telegram": "",
+  "youtube": "",
+  "instagram": "",
+  "copyright": "© 2026 Test Portal"
+}
