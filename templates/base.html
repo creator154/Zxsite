@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>{% block title %}NEET Test Portal{% endblock %}</title>
+
+<link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/batch.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+
+<script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+{% block head %}{% endblock %}
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+<div class="container">
+
+<a href="/" class="logo">
+<img src="{{ url_for('static', filename='images/logo.png') }}">
+<span>NEET Test Portal</span>
+</a>
+
+<nav>
+
+<a href="/">Home</a>
+<a href="/search">Search</a>
+
+</nav>
+
+</div>
+
+</header>
+
+<main>
+
+{% block content %}
+
+{% endblock %}
+
+</main>
+
+<footer>
+
+<div class="container">
+
+<p>© 2026 NEET Test Portal</p>
+
+</div>
+
+</footer>
+
+</body>
+
+</html>
