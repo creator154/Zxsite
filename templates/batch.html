@@ -1,28 +1,48 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
 
-<head>
+{% block title %}
+{{ batch.name }}
+{% endblock %}
 
-<title>{{ batch.title }}</title>
+{% block content %}
 
-<link rel="stylesheet" href="/static/css/style.css">
+<section class="batch-header">
 
-</head>
+<img src="{{ batch.banner }}">
 
-<body>
+<div>
 
-<h1>{{ batch.title }}</h1>
+<h1>{{ batch.name }}</h1>
 
-{% for test in batch.tests %}
-
-<div class="test">
-
-{{ test.title }}
+<p>{{ batch.description }}</p>
 
 </div>
 
+</section>
+
+<section class="subjects">
+
+<h2>Subjects</h2>
+
+<div class="grid">
+
+{% for subject in subjects %}
+
+<a
+class="subject-card"
+href="/subject/{{ batch.id }}/{{ subject.id }}"
+>
+
+<img src="{{ subject.icon }}">
+
+<h3>{{ subject.name }}</h3>
+
+</a>
+
 {% endfor %}
 
-</body>
+</div>
 
-</html>
+</section>
+
+{% endblock %}
