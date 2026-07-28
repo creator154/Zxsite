@@ -1,0 +1,67 @@
+@media(max-width:992px){
+
+.batch-grid,
+.subject-grid{
+grid-template-columns:repeat(2,1fr);
+}
+
+.hero h1{
+font-size:32px;
+}
+
+}
+
+@media(max-width:768px){
+
+.navbar .container{
+flex-direction:column;
+gap:15px;
+}
+
+.batch-grid,
+.subject-grid{
+grid-template-columns:1fr;
+}
+
+.test-card{
+flex-direction:column;
+align-items:flex-start;
+gap:15px;
+}
+
+.hero{
+padding:40px 15px;
+}
+
+.hero h1{
+font-size:26px;
+}
+
+}
+
+@media(max-width:480px){
+
+.container{
+width:95%;
+}
+
+.logo{
+font-size:18px;
+}
+
+.logo img{
+width:35px;
+height:35px;
+}
+
+.btn{
+width:100%;
+text-align:center;
+}
+
+.start-btn{
+width:100%;
+text-align:center;
+}
+
+}
