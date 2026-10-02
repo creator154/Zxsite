@@ -8,7 +8,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body { background-color: #f7f9fc; color: #333; }
         
-        /* Top Green Gradient Banner */
         .header-banner {
             background: linear-gradient(135deg, #1abc9c, #2ecc71);
             color: white;
@@ -21,7 +20,6 @@
         .logo span { color: #f39c12; }
         .subtitle { font-size: 14px; opacity: 0.9; margin-top: 5px; }
         
-        /* Search Bar Setup */
         .search-container { max-width: 500px; margin: -25px auto 20px auto; padding: 0 20px; }
         .search-box {
             width: 100%; padding: 15px 20px; border: 2px solid #3498db;
@@ -32,7 +30,6 @@
         .content-area { max-width: 600px; margin: 20px auto; padding: 0 20px; }
         .section-title { font-size: 18px; color: #2c3e50; margin-bottom: 15px; font-weight: bold; }
         
-        /* PW Style Test Cards */
         .batch-card, .test-card {
             background: white; padding: 20px; border-radius: 12px;
             margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -72,7 +69,6 @@
 
         window.onload = () => { searchLiveBatches(); };
 
-        // Search Engine
         async function searchLiveBatches() {
             const query = document.getElementById('searchBar').value;
             const res = await fetch(`/api/student/search-batches?q=${query}`);
@@ -93,7 +89,6 @@
             }
         }
 
-        // Test Series Fetcher (Screenshot #5 view)
         async function loadBatchTests(batchName) {
             document.getElementById('searchBar').style.display = 'none';
             const res = await fetch(`/api/student/get-tests?batch=${encodeURIComponent(batchName)}`);
