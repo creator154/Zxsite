@@ -1,93 +1,131 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepDesk - PW Test Series & Batches</title>
+    <title>Quizard - PW Test Series</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #0b1120; color: #f8fafc; padding: 20px; }
-        .header { text-align: center; padding: 25px 0 15px; }
-        .header h1 { font-size: 2.2rem; color: #38bdf8; margin-bottom: 5px; }
-        .header p { color: #94a3b8; font-size: 0.95rem; }
-        
-        .search-container { margin: 20px auto; max-width: 500px; }
-        .search-container input { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border-radius: 10px; 
-            border: 1px solid #334155; 
-            background: #1e293b; 
-            color: #fff; 
-            font-size: 1rem;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0b132b; color: #ffffff; padding: 15px; }
+
+        .app-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #38bdf8;
+            margin-top: 10px;
+        }
+
+        .app-subtitle {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #1c2541;
+            border: 1px solid #3a506b;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
             outline: none;
         }
-        .search-container input:focus { border-color: #38bdf8; }
 
-        .container { max-width: 500px; margin: auto; }
-        .category-card { 
-            background: #1e293b; 
-            border-radius: 12px; 
-            padding: 16px; 
-            margin-bottom: 14px; 
-            border: 1px solid #334155; 
-        }
-        .category-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 1.1rem;
-        }
-        .dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-        .dot-neet { background-color: #22c55e; }
-        .dot-jee { background-color: #3b82f6; }
-        .dot-boards { background-color: #f59e0b; }
+        .search-input::placeholder { color: #64748b; }
 
-        .badge { background: #334155; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; color: #cbd5e1; }
-        
-        .batch-list { margin-top: 12px; display: none; }
-        .batch-item { 
-            background: #0f172a; 
-            padding: 12px; 
-            border-radius: 8px; 
-            margin-top: 8px; 
-            display: flex; 
-            justify-content: space-between; 
+        .category-card {
+            background-color: #1c2541;
+            border: 1px solid #3a506b;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            border: 1px solid #1e293b;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
         }
-        .batch-name { font-size: 0.95rem; font-weight: 500; }
-        .lang-tag { 
-            font-size: 0.75rem; 
-            padding: 3px 8px; 
-            border-radius: 4px; 
+
+        .dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .dot-neet { background-color: #10b981; }
+        .dot-jee { background-color: #3b82f6; }
+
+        .count-badge {
+            background-color: #3a506b;
+            color: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-right: 6px;
+        }
+
+        .batch-container {
+            display: none;
+            background-color: #0b132b;
+            padding: 10px;
+            border-top: 1px solid #3a506b;
+        }
+
+        .batch-card {
+            background-color: #1c2541;
+            border: 1px solid #2a3d66;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .batch-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .badge-lang {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
             font-weight: bold;
         }
-        .lang-hindi { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-        .lang-eng { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .hindi { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .english { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>PrepDesk</h1>
-        <p>Your Complete Exam Preparation Platform</p>
-    </div>
+    <h1 class="app-title">Quizard</h1>
+    <p class="app-subtitle">Your Complete Exam Preparation Platform</p>
 
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search batches, e.g. Yakeen, Lakshay..." onkeyup="filterBatches()">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search batches, e.g. Yakeen, Lakshay..." onkeyup="filterData()">
     </div>
 
-    <div class="container" id="categoriesContainer"></div>
+    <div id="mainContent"></div>
 
     <script>
-        // PW NEET & JEE Batches Data
         const DATA = [
             {
-                category: "NEET Tests",
-                dotClass: "dot-neet",
+                title: "NEET Tests",
+                dot: "dot-neet",
                 batches: [
                     { name: "Yakeen NEET 2026 (Dropper)", lang: "Hindi" },
                     { name: "Yakeen NEET 2026 (Dropper)", lang: "English" },
@@ -98,8 +136,8 @@
                 ]
             },
             {
-                category: "JEE Tests",
-                dotClass: "dot-jee",
+                title: "JEE Tests",
+                dot: "dot-jee",
                 batches: [
                     { name: "Prayas JEE 2026 (Dropper)", lang: "Hindi" },
                     { name: "Prayas JEE 2026 (Dropper)", lang: "English" },
@@ -111,70 +149,65 @@
             }
         ];
 
-        function renderData(dataToRender = DATA) {
-            const container = document.getElementById("categoriesContainer");
+        function render(data) {
+            const container = document.getElementById("mainContent");
             container.innerHTML = "";
 
-            dataToRender.forEach((cat, index) => {
+            data.forEach((cat, index) => {
                 const card = document.createElement("div");
                 card.className = "category-card";
 
-                const batchHTML = cat.batches.map(b => `
-                    <div class="batch-item">
-                        <span class="batch-name">${b.name}</span>
-                        <span class="lang-tag ${b.lang === 'Hindi' ? 'lang-hindi' : 'lang-eng'}">${b.lang}</span>
+                const batchesHTML = cat.batches.map(b => `
+                    <div class="batch-card">
+                        <span class="batch-title">${b.name}</span>
+                        <span class="badge-lang ${b.lang.toLowerCase()}">${b.lang}</span>
                     </div>
                 `).join('');
 
                 card.innerHTML = `
-                    <div class="category-header" onclick="toggleCategory(${index})">
+                    <div class="category-header" onclick="toggle(${index})">
                         <div>
-                            <span class="dot ${cat.dotClass}"></span>
-                            <span>${cat.category}</span>
+                            <span class="dot ${cat.dot}"></span>
+                            <span>${cat.title}</span>
                         </div>
                         <div>
-                            <span class="badge">${cat.batches.length}</span> ▾
+                            <span class="count-badge">${cat.batches.length}</span>
+                            <span>▾</span>
                         </div>
                     </div>
-                    <div class="batch-list" id="batch-${index}">
-                        ${batchHTML}
+                    <div class="batch-container" id="batch-box-${index}">
+                        ${batchesHTML}
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function toggleCategory(index) {
-            const list = document.getElementById(`batch-${index}`);
-            if(list) {
-                list.style.display = list.style.display === "block" ? "none" : "block";
-            }
+        function toggle(index) {
+            const el = document.getElementById(`batch-box-${index}`);
+            el.style.display = el.style.display === "block" ? "none" : "block";
         }
 
-        function filterBatches() {
+        function filterData() {
             const query = document.getElementById("searchInput").value.toLowerCase();
-            if (!query) {
-                renderData();
+            if(!query) {
+                render(DATA);
                 return;
             }
 
-            const filteredData = DATA.map(cat => {
-                const filteredBatches = cat.batches.filter(b => 
-                    b.name.toLowerCase().includes(query) || b.lang.toLowerCase().includes(query)
-                );
-                return { ...cat, batches: filteredBatches };
+            const filtered = DATA.map(cat => {
+                const sub = cat.batches.filter(b => b.name.toLowerCase().includes(query) || b.lang.toLowerCase().includes(query));
+                return { ...cat, batches: sub };
             }).filter(cat => cat.batches.length > 0);
 
-            renderData(filteredData);
-            
-            // Search karte waqt saare accordion open kar do
-            filteredData.forEach((_, index) => {
-                const list = document.getElementById(`batch-${index}`);
-                if(list) list.style.display = "block";
+            render(filtered);
+            filtered.forEach((_, idx) => {
+                const el = document.getElementById(`batch-box-${idx}`);
+                if(el) el.style.display = "block";
             });
         }
 
-        renderData();
+        render(DATA);
     </script>
 </body>
 </html>
