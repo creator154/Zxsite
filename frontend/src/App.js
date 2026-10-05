@@ -35,7 +35,7 @@ const BATCH_CATEGORIES = {
 function App() {
   const [selectedCategory, setSelectedCategory] = useState('NEET (English Medium)');
   const [selectedBatch, setSelectedBatch] = useState(BATCH_CATEGORIES['NEET (English Medium)'][0].id);
-  const [activeTab, setActiveTab] = useState('test'); // 'test' or 'dpp'
+  const [activeTab, setActiveTab] = useState('test');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState(null);
@@ -155,4 +155,16 @@ function App() {
               <p style={{ fontSize: '14px', color: '#cbd5e1' }}>Total Questions: {activeQuiz.totalQuestions}</p>
               <button 
                 onClick={() => setActiveQuiz(null)}
-                style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', width: '100%',
+                style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', width: '100%', padding: '10px', borderRadius: '6px', fontWeight: 'bold', marginTop: '10px', cursor: 'pointer' }}
+              >
+                Close Engine
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;
