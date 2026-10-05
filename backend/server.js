@@ -7,13 +7,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Multi-fallback PW Batches Proxy Endpoint
+// PW Official Batches Live Sync Endpoint
 app.get('/api/pw-batches', async (req, res) => {
   const rawToken = process.env.PW_JWT_TOKEN || '';
   const cleanToken = rawToken.replace(/^Bearer\s+/i, '').trim();
 
   if (!cleanToken) {
-    return res.status(400).json({ success: false, message: 'PW_JWT_TOKEN missing' });
+    return res.status(400).json({ success: false, message: 'PW_JWT_TOKEN Missing in Heroku' });
   }
 
   const headers = {
@@ -24,30 +24,24 @@ app.get('/api/pw-batches', async (req, res) => {
     'Accept': 'application/json, text/plain, */*'
   };
 
-  // Try fetching from primary & secondary PW endpoints
-  const endpoints = [
-    'https://api.penpencil.co/v2/batches/my-batches?mode=1&page=1',
-    'https://api.penpencil.co/v3/batches?mode=1&page=1',
-    'https://api.penpencil.co/v2/batches/search?mode=1&page=1'
-  ];
+  // Try fetching directly from PW live endpoints
+  try {
+    let response = await axios.get('https://api.penpencil.co/v3/batches/search?page=1&mode=1', { headers });
+    let batchList = response.data?.data || [];
 
-  for (const url of endpoints) {
-    try {
-      const response = await axios.get(url, { headers, timeout: 8000 });
-      const rawData = response.data?.data || response.data;
-      if (Array.isArray(rawData) && rawData.length > 0) {
-        return res.json({ success: true, batches: rawData });
-      }
-    } catch (err) {
-      console.log(`Endpoint ${url} failed with status:`, err.response?.status || err.message);
+    if (!Array.isArray(batchList) || batchList.length === 0) {
+      response = await axios.get('https://api.penpencil.co/v2/batches/my-batches?page=1', { headers });
+      batchList = response.data?.data || [];
     }
-  }
 
-  // Fallback response if PW API returns empty array or token expired
-  res.json({ success: false, message: 'Could not fetch live batches. Token might be expired.' });
+    return res.json({ success: true, batches: batchList });
+  } catch (error) {
+    console.error('PW API Error:', error.response?.data || error.message);
+    return res.status(500).json({ success: false, error: 'PW API Auth/Fetch Failed' });
+  }
 });
 
-// Dynamic Batch Content (Mock Tests / DPPs) Proxy
+// Dynamic Tests/DPPs Live Sync Endpoint
 app.get('/api/live/:batchId/:type', async (req, res) => {
   const { batchId, type } = req.params;
   const rawToken = process.env.PW_JWT_TOKEN || '';
@@ -59,7 +53,7 @@ app.get('/api/live/:batchId/:type', async (req, res) => {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
   };
 
-  const endpoint = type === 'dpp'
+  const endpoint = type === 'dpp' 
     ? `https://api.penpencil.co/v3/batches/${batchId}/dpps`
     : `https://api.penpencil.co/v3/batches/${batchId}/subject/tests`;
 
@@ -71,7 +65,7 @@ app.get('/api/live/:batchId/:type', async (req, res) => {
   }
 });
 
-// Serve Frontend Build
+// Serve React Frontend
 const buildPath = path.join(__dirname, '../frontend/build');
 app.use(express.static(buildPath));
 
