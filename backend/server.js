@@ -1,11 +1,13 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors');
 const path = require('path');
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
-// PW Live Batches Endpoint
+// PW Batches Proxy Endpoint
 app.get('/api/pw-batches', async (req, res) => {
   try {
     const response = await axios.get('https://api.penpencil.co/v3/batches?mode=1&page=1', {
@@ -21,14 +23,14 @@ app.get('/api/pw-batches', async (req, res) => {
   }
 });
 
-// Serve React Frontend Build
-const buildPath = path.join(__dirname, 'frontend', 'build');
+// Fix: Backend subfolder ke bahar jaakar frontend/build locate karna
+const buildPath = path.join(__dirname, '../frontend/build');
 app.use(express.static(buildPath));
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(buildPath, 'index.html'), (err) => {
     if (err) {
-      res.status(500).send("Build not found. Run 'npm run build' inside frontend.");
+      res.status(500).send("Build index.html not found.");
     }
   });
 });
