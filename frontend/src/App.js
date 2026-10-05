@@ -1,170 +1,140 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// PW Batch Master List
-const BATCH_CATEGORIES = {
-  'NEET (English Medium)': [
-    { name: 'Arjuna NEET 1.0 (Class 11th)', id: 'arjuna_neet_1' },
-    { name: 'Arjuna NEET 2.0 (Class 11th)', id: 'arjuna_neet_2' },
-    { name: 'Lakshay NEET 1.0 (Class 12th)', id: 'lakshay_neet_1' },
-    { name: 'Lakshay NEET 2.0 (Class 12th)', id: 'lakshay_neet_2' },
-    { name: 'Yakeen NEET 1.0 (Dropper)', id: 'yakeen_neet_1' },
-    { name: 'Yakeen NEET 2.0 (Dropper)', id: 'yakeen_neet_2' },
-    { name: 'Yakeen NEET 3.0 (Dropper)', id: 'yakeen_neet_3' }
-  ],
-  'NEET (Hindi Medium)': [
-    { name: 'Arjuna NEET Hindi (Class 11th)', id: 'arjuna_neet_hindi' },
-    { name: 'Lakshay NEET Hindi (Class 12th)', id: 'lakshay_neet_hindi' },
-    { name: 'Yakeen NEET Hindi (Dropper)', id: 'yakeen_neet_hindi' }
-  ],
-  'JEE (English Medium)': [
-    { name: 'Arjuna JEE 1.0 (Class 11th)', id: 'arjuna_jee_1' },
-    { name: 'Arjuna JEE 2.0 (Class 11th)', id: 'arjuna_jee_2' },
-    { name: 'Lakshay JEE 1.0 (Class 12th)', id: 'lakshay_jee_1' },
-    { name: 'Lakshay JEE 2.0 (Class 12th)', id: 'lakshay_jee_2' },
-    { name: 'Prayas JEE 1.0 (Dropper)', id: 'prayas_jee_1' },
-    { name: 'Prayas JEE 2.0 (Dropper)', id: 'prayas_jee_2' }
-  ],
-  'JEE (Hindi Medium)': [
-    { name: 'Arjuna JEE Hindi (Class 11th)', id: 'arjuna_jee_hindi' },
-    { name: 'Lakshay JEE Hindi (Class 12th)', id: 'lakshay_jee_hindi' },
-    { name: 'Prayas JEE Hindi (Dropper)', id: 'prayas_jee_hindi' }
-  ]
-};
+// Quizard V3 Style Batch Database Matrix
+const BATCHES = [
+  // NEET Batches
+  { id: 'yakeen_neet_2025', name: 'Yakeen NEET 2025', category: 'NEET', type: 'Dropper', image: '🩺' },
+  { id: 'yakeen_neet_hindi_2025', name: 'Yakeen NEET Hindi 2025', category: 'NEET', type: 'Dropper (Hindi)', image: '🩺' },
+  { id: 'arjuna_neet_2025', name: 'Arjuna NEET 2025', category: 'NEET', type: 'Class 11th', image: '🧪' },
+  { id: 'lakshay_neet_2025', name: 'Lakshay NEET 2025', category: 'NEET', type: 'Class 12th', image: '🧬' },
+  
+  // JEE Batches
+  { id: 'prayas_jee_2025', name: 'Prayas JEE 2025', category: 'JEE', type: 'Dropper', image: '⚙️' },
+  { id: 'prayas_jee_hindi_2025', name: 'Prayas JEE Hindi 2025', category: 'JEE', type: 'Dropper (Hindi)', image: '⚙️' },
+  { id: 'arjuna_jee_2025', name: 'Arjuna JEE 2025', category: 'JEE', type: 'Class 11th', image: '📐' },
+  { id: 'lakshay_jee_2025', name: 'Lakshay JEE 2025', category: 'JEE', type: 'Class 12th', image: '🚀' }
+];
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState('NEET (English Medium)');
-  const [selectedBatch, setSelectedBatch] = useState(BATCH_CATEGORIES['NEET (English Medium)'][0].id);
-  const [activeTab, setActiveTab] = useState('test');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [contentType, setContentType] = useState('test'); // 'test' or 'dpp'
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeQuiz, setActiveQuiz] = useState(null);
 
-  // Fetch Live Content from Backend
-  const fetchLiveContent = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`/api/live/${selectedBatch}/${activeTab}`);
-      if (res.data.success) {
-        setItems(res.data.items);
-      }
-    } catch (err) {
-      console.error('Fetch Error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filter batches based on category and search
+  const filteredBatches = BATCHES.filter(b => {
+    const matchesCat = selectedCategory === 'ALL' || b.category === selectedCategory;
+    const matchesSearch = b.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
 
+  // Fetch tests or DPPs when batch selected
   useEffect(() => {
-    fetchLiveContent();
-  }, [selectedBatch, activeTab]);
+    if (selectedBatch) {
+      setLoading(true);
+      axios.get(`/api/live/${selectedBatch.id}/${contentType}`)
+        .then(res => {
+          if (res.data.success) setItems(res.data.items);
+        })
+        .catch(err => console.error(err))
+        .finally(() => setLoading(false));
+    }
+  }, [selectedBatch, contentType]);
 
   return (
-    <div style={{ fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif', backgroundColor: '#0f172a', color: '#f8fafc', minHeight: '100vh', padding: '12px' }}>
+    <div style={{ backgroundColor: '#0b0f19', color: '#e2e8f0', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       
-      {/* Quizard Header Banner */}
-      <header style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '16px', borderRadius: '12px', marginBottom: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-        <h1 style={{ margin: 0, fontSize: '22px', color: '#38bdf8', letterSpacing: '0.5px' }}>⚡ QUIZARD - PW TEST PORTAL</h1>
-        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>Practice Tests & DPPs for NEET / JEE (Hindi & Eng)</p>
-      </header>
-
-      {/* Category Selector */}
-      <div style={{ backgroundColor: '#1e293b', padding: '14px', borderRadius: '12px', border: '1px solid #334155', marginBottom: '16px' }}>
-        
-        <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>
-          SELECT STREAM / MEDIUM:
-        </label>
-        <select 
-          value={selectedCategory} 
-          onChange={(e) => {
-            setSelectedCategory(e.target.value);
-            setSelectedBatch(BATCH_CATEGORIES[e.target.value][0].id);
-          }}
-          style={{ width: '100%', padding: '10px', backgroundColor: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '8px', fontSize: '14px', marginBottom: '12px' }}
-        >
-          {Object.keys(BATCH_CATEGORIES).map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-
-        <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>
-          SELECT TARGET BATCH:
-        </label>
-        <select 
-          value={selectedBatch} 
-          onChange={(e) => setSelectedBatch(e.target.value)}
-          style={{ width: '100%', padding: '10px', backgroundColor: '#0f172a', color: '#38bdf8', border: '1px solid #0284c7', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold' }}
-        >
-          {BATCH_CATEGORIES[selectedCategory].map((b) => (
-            <option key={b.id} value={b.id}>{b.name}</option>
-          ))}
-        </select>
-
-        {/* Tab Switcher */}
-        <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
-          <button 
-            onClick={() => setActiveTab('test')}
-            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', backgroundColor: activeTab === 'test' ? '#0284c7' : '#334155', color: '#fff' }}
-          >
-            📝 Mock Tests
-          </button>
-          <button 
-            onClick={() => setActiveTab('dpp')}
-            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', backgroundColor: activeTab === 'dpp' ? '#0284c7' : '#334155', color: '#fff' }}
-          >
-            📚 Daily DPPs
-          </button>
+      {/* Quizard Top Header */}
+      <nav style={{ backgroundColor: '#111827', borderBottom: '1px solid #1f2937', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '24px' }}>⚡</span>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#38bdf8' }}>QUIZARD <span style={{ fontSize: '12px', color: '#a855f7', backgroundColor: '#2e1065', padding: '2px 8px', borderRadius: '12px' }}>v3.0</span></h2>
         </div>
-      </div>
+        <span style={{ fontSize: '13px', color: '#94a3b8', backgroundColor: '#1e293b', padding: '5px 12px', borderRadius: '20px' }}>PW Live Test Engine</span>
+      </nav>
 
-      {/* Content Area */}
-      <main>
-        {loading ? (
-          <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '30px' }}>Syncing content from database...</p>
-        ) : items.length === 0 ? (
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', textAlign: 'center', padding: '30px 15px', borderRadius: '12px' }}>
-            <h3 style={{ margin: '0 0 8px 0', color: '#f8fafc' }}>No {activeTab.toUpperCase()}s Synced Yet</h3>
-            <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Selected batch ke test/dpp content ko admin panel se sync karein.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {items.map((item, idx) => (
-              <div key={idx} style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '14px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h4 style={{ margin: '0 0 4px 0', color: '#f8fafc', fontSize: '15px' }}>{item.title}</h4>
-                  <span style={{ fontSize: '11px', backgroundColor: '#0369a1', color: '#e0f2fe', padding: '2px 6px', borderRadius: '4px' }}>
-                    {item.totalQuestions || 0} Questions
-                  </span>
-                </div>
-                <button 
-                  onClick={() => setActiveQuiz(item)}
-                  style={{ backgroundColor: '#22c55e', color: '#000', border: 'none', padding: '8px 14px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  Start
-                </button>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 15px' }}>
+        
+        {/* If No Batch Selected -> Show Quizard Batch Grid */}
+        {!selectedBatch ? (
+          <div>
+            {/* Search and Category Filter Bar */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              <input 
+                type="text" 
+                placeholder="🔍 Search PW Batch (e.g. Yakeen, Prayas, Arjuna)..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ width: '100%', padding: '14px', borderRadius: '10px', backgroundColor: '#111827', border: '1px solid #374151', color: '#fff', fontSize: '15px', boxSizing: 'border-box', outline: 'none' }}
+              />
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {['ALL', 'NEET', 'JEE'].map(cat => (
+                  <button 
+                    key={cat} 
+                    onClick={() => setSelectedCategory(cat)}
+                    style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', backgroundColor: selectedCategory === cat ? '#0284c7' : '#1f2937', color: '#fff' }}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {/* Modal Window for Quiz Start */}
-        {activeQuiz && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px' }}>
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #0284c7', padding: '20px', borderRadius: '12px', maxWidth: '450px', width: '100%' }}>
-              <h3 style={{ margin: '0 0 10px 0', color: '#38bdf8' }}>{activeQuiz.title}</h3>
-              <p style={{ fontSize: '14px', color: '#cbd5e1' }}>Total Questions: {activeQuiz.totalQuestions}</p>
-              <button 
-                onClick={() => setActiveQuiz(null)}
-                style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', width: '100%', padding: '10px', borderRadius: '6px', fontWeight: 'bold', marginTop: '10px', cursor: 'pointer' }}
-              >
-                Close Engine
-              </button>
+            {/* Batch Cards Grid */}
+            <h3 style={{ fontSize: '16px', color: '#94a3b8', marginBottom: '14px' }}>SELECT YOUR BATCH</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+              {filteredBatches.map(batch => (
+                <div 
+                  key={batch.id} 
+                  onClick={() => setSelectedBatch(batch)}
+                  style={{ backgroundColor: '#111827', border: '1px solid #1f2937', borderRadius: '12px', padding: '16px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '15px' }}
+                >
+                  <div style={{ fontSize: '32px', backgroundColor: '#1e293b', padding: '10px', borderRadius: '10px' }}>{batch.image}</div>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', color: '#f8fafc' }}>{batch.name}</h4>
+                    <span style={{ fontSize: '12px', color: '#38bdf8', backgroundColor: '#0369a122', padding: '2px 8px', borderRadius: '4px' }}>{batch.type}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-      </main>
-    </div>
-  );
-}
+        ) : (
+          /* Inside Selected Batch -> Show Tests & DPPs */
+          <div>
+            <button 
+              onClick={() => setSelectedBatch(null)}
+              style={{ backgroundColor: '#1f2937', color: '#38bdf8', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', marginBottom: '20px' }}
+            >
+              ← Back to Batches
+            </button>
 
-export default App;
+            <div style={{ backgroundColor: '#111827', padding: '20px', borderRadius: '12px', border: '1px solid #1f2937', marginBottom: '20px' }}>
+              <h2 style={{ margin: '0 0 6px 0', color: '#f8fafc' }}>{selectedBatch.name}</h2>
+              <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>Category: {selectedBatch.category} | {selectedBatch.type}</p>
+
+              {/* Tabs for Test / DPP */}
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                <button 
+                  onClick={() => setContentType('test')}
+                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', backgroundColor: contentType === 'test' ? '#0284c7' : '#1f2937', color: '#fff' }}
+                >
+                  📝 Mock Tests
+                </button>
+                <button 
+                  onClick={() => setContentType('dpp')}
+                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', backgroundColor: contentType === 'dpp' ? '#0284c7' : '#1f2937', color: '#fff' }}
+                >
+                  ✏️ Daily DPPs
+                </button>
+              </div>
+            </div>
+
+            {/* Content List */}
+            {loading ? (
+              <p style={{ textAlign: 'center', color: '#94a3b8' }}>Loading content...</p>
+            ) : items.length === 0 ? (
+              <div style={{ backgroundColor: '#111827', textAlign: 'center', padding: '40px 20px', borderRadius: '12px', border: '1px solid #1f2937
