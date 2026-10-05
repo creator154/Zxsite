@@ -1,26 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Default PW Batches Fallback
+const FALLBACK_BATCHES = [
+  { _id: '698adaafee5f29171102c9ca', name: 'Yakeen NEET Hindi 2027', category: 'NEET', language: 'Hindi', byName: 'Popular', previewImage: null },
+  { _id: 'yakeen_neet_1_2027', name: 'Yakeen NEET 1.0 2027', category: 'NEET', language: 'Hinglish', byName: 'Live', previewImage: null },
+  { _id: 'yakeen_neet_2_2027', name: 'Yakeen NEET 2.0 2027', category: 'NEET', language: 'Hinglish', byName: 'Live', previewImage: null },
+  { _id: 'arjuna_neet_1_2027', name: 'Arjuna NEET 1.0 2027', category: 'NEET', language: 'Class 11th', byName: 'Class 11', previewImage: null },
+  { _id: 'arjuna_neet_hindi_2027', name: 'Arjuna NEET Hindi 2027', category: 'NEET', language: 'Class 11th (Hindi)', byName: 'Class 11', previewImage: null },
+  { _id: 'lakshay_neet_1_2027', name: 'Lakshay NEET 1.0 2027', category: 'NEET', language: 'Class 12th', byName: 'Class 12', previewImage: null },
+  { _id: 'prayas_jee_1_2027', name: 'Prayas JEE 1.0 2027', category: 'JEE', language: 'Hinglish', byName: 'Live', previewImage: null },
+  { _id: 'prayas_jee_hindi_2027', name: 'Prayas JEE Hindi 2027', category: 'JEE', language: 'Hindi', byName: 'Live', previewImage: null },
+  { _id: 'arjuna_jee_1_2027', name: 'Arjuna JEE 1.0 2027', category: 'JEE', language: 'Class 11th', byName: 'Class 11', previewImage: null },
+  { _id: 'lakshay_jee_1_2027', name: 'Lakshay JEE 1.0 2027', category: 'JEE', language: 'Class 12th', byName: 'Class 12', previewImage: null }
+];
+
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [batches, setBatches] = useState([]);
+  const [batches, setBatches] = useState(FALLBACK_BATCHES);
   const [activeBatch, setActiveBatch] = useState(null);
   const [contentType, setContentType] = useState('batch_test');
   const [items, setItems] = useState([]);
-  const [loadingBatches, setLoadingBatches] = useState(true);
+  const [loadingBatches, setLoadingBatches] = useState(false);
   const [loadingItems, setLoadingItems] = useState(false);
 
-  // 1. Fetch PW Batches Dynamically from Backend Proxy
+  // Read batch ID directly from URL path if deep-linked
   useEffect(() => {
+    const pathParts = window.location.pathname.split('/');
+    if (pathParts[1] === 'batch' && pathParts[2]) {
+      const bId = pathParts[2];
+      const bType = pathParts[4] || 'batch_test';
+      const decodedName = pathParts[3] ? decodeURIComponent(pathParts[3]) : 'Selected Batch';
+      
+      const found = batches.find(b => b._id === bId) || { _id: bId, name: decodedName, category: 'NEET' };
+      setActiveBatch(found);
+      setContentType(bType);
+    }
+  }, []);
+
+  // Fetch Live Batches from API
+  useEffect(() => {
+    setLoadingBatches(true);
     axios.get('/api/pw-batches')
       .then(res => {
-        if (res.data.success && res.data.batches) {
+        if (res.data.success && res.data.batches && res.data.batches.length > 0) {
           setBatches(res.data.batches);
         }
       })
       .catch(err => {
-        console.error("Failed to fetch PW batches:", err);
+        console.warn("Using local fallback batches catalog.");
       })
       .finally(() => setLoadingBatches(false));
   }, []);
@@ -38,7 +67,7 @@ function App() {
     window.history.pushState({}, '', '/');
   };
 
-  // 2. Fetch Batch Content (Tests/DPPs) when inside a batch
+  // Fetch Batch Content (Tests/DPPs)
   useEffect(() => {
     if (activeBatch) {
       setLoadingItems(true);
@@ -52,7 +81,6 @@ function App() {
     }
   }, [activeBatch, contentType]);
 
-  // Filter batches based on category & search input
   const filteredBatches = batches.filter(b => {
     const name = b.name || '';
     const exam = b.exam || b.category || '';
@@ -65,7 +93,7 @@ function App() {
     <div style={{ backgroundColor: '#070a12', color: '#f1f5f9', minHeight: '100vh', fontFamily: "system-ui, -apple-system, sans-serif" }}>
       
       {/* Top Navbar */}
-      <nav style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '14px 20px', sticky: 'top', top: 0, zIndex: 100, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <nav style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={handleBack}>
           <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #0284c7, #9333ea)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '20px' }}>⚡</span>
@@ -87,7 +115,6 @@ function App() {
         {/* HOMEPAGE BATCH CATALOGUE */}
         {!activeBatch ? (
           <div>
-            {/* Search Box */}
             <input 
               type="text" 
               placeholder="🔍 Search batch name..." 
@@ -96,7 +123,6 @@ function App() {
               style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#fff', fontSize: '14px', boxSizing: 'border-box', outline: 'none', marginBottom: '14px' }}
             />
 
-            {/* Category Filter Tabs */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
               {['ALL', 'NEET', 'JEE'].map(cat => (
                 <button 
@@ -104,7 +130,7 @@ function App() {
                   onClick={() => setSelectedCategory(cat)}
                   style={{ flex: 1, padding: '10px', borderRadius: '10px', border: selectedCategory === cat ? '1px solid #38bdf8' : '1px solid #1e293b', fontWeight: '700', cursor: 'pointer', backgroundColor: selectedCategory === cat ? '#0284c7' : '#0f172a', color: '#fff', fontSize: '13px' }}
                 >
-                  {cat === 'ALL' ? ' All Streams' : cat === 'NEET' ? '🩺 NEET' : '⚙️ JEE'}
+                  {cat === 'ALL' ? 'All Streams' : cat === 'NEET' ? '🩺 NEET' : '⚙️ JEE'}
                 </button>
               ))}
             </div>
@@ -113,44 +139,33 @@ function App() {
               AVAILABLE BATCHES ({filteredBatches.length})
             </h3>
             
-            {loadingBatches ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-                <p>Syncing batches from Physics Wallah...</p>
-              </div>
-            ) : filteredBatches.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                <p>No batches found. Check your PW_JWT_TOKEN in Heroku.</p>
-              </div>
-            ) : (
-              /* 2-Column Responsive Grid Cards */
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                {filteredBatches.map((batch, index) => (
-                  <div 
-                    key={batch._id || batch.id || index} 
-                    onClick={() => handleOpenBatch(batch, 'batch_test')}
-                    style={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '100px' }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ width: '36px', height: '36px', backgroundColor: '#1e293b', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                        {batch.previewImage ? <img src={batch.previewImage.baseUrl + batch.previewImage.key} alt="" style={{ width: '100%', borderRadius: '6px' }} /> : '🩺'}
-                      </div>
-                      <span style={{ fontSize: '10px', fontWeight: '700', color: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
-                        {batch.byName || 'PW'}
-                      </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              {filteredBatches.map((batch, index) => (
+                <div 
+                  key={batch._id || batch.id || index} 
+                  onClick={() => handleOpenBatch(batch, 'batch_test')}
+                  style={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '100px' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ width: '36px', height: '36px', backgroundColor: '#1e293b', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                      {batch.previewImage ? <img src={batch.previewImage.baseUrl + batch.previewImage.key} alt="" style={{ width: '100%', borderRadius: '6px' }} /> : '🩺'}
                     </div>
-
-                    <div style={{ marginTop: '10px' }}>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#f8fafc', lineHeight: '1.3' }}>
-                        {batch.name}
-                      </h4>
-                      <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
-                        {batch.language || 'Hindi / English'}
-                      </p>
-                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                      {batch.byName || 'PW'}
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <div style={{ marginTop: '10px' }}>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#f8fafc', lineHeight: '1.3' }}>
+                      {batch.name}
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
+                      {batch.language || 'Hindi / English'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
           </div>
         ) : (
@@ -184,10 +199,10 @@ function App() {
             </div>
 
             {loadingItems ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading tests...</div>
+              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading tests/DPPs...</div>
             ) : items.length === 0 ? (
               <div style={{ backgroundColor: '#0f172a', border: '1px dashed #334155', borderRadius: '14px', padding: '40px 20px', textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>No items synced yet for this batch.</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>No test series / DPP synced for this batch yet.</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gap: '10px' }}>
