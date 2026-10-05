@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 1. Mongoose Schema & Model Definition
+// Schema Definition
 const TestSchema = new mongoose.Schema({
   batchId: { type: String, required: true },
   batchName: { type: String },
@@ -20,15 +20,17 @@ const TestSchema = new mongoose.Schema({
 
 const Test = mongoose.models.Test || mongoose.model('Test', TestSchema);
 
-// 2. Database Connection
+// MongoDB Atlas Connection
 const MONGO_URI = process.env.MONGO_URI;
 mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Atlas Connected Successfully'))
   .catch(err => console.error('MongoDB Connection Error:', err));
 
-// 3. API Routes (Directly inside server.js)
+// Routes
+app.get('/', (req, res) => {
+  res.send('PW Quiz Portal Engine is Live & Running!');
+});
 
-// Route A: Fetch Enrolled Batches using PW Token
 app.post('/api/uploader/batches', async (req, res) => {
   const { authToken } = req.body;
   if (!authToken) return res.status(400).json({ success: false, message: 'Token is required' });
@@ -43,9 +45,8 @@ app.post('/api/uploader/batches', async (req, res) => {
   }
 });
 
-// Route B: Fetch Tests or DPPs for Selected Batch
 app.post('/api/uploader/content', async (req, res) => {
-  const { authToken, batchId, type } = req.body; // type = 'tests' or 'dpps'
+  const { authToken, batchId, type } = req.body;
 
   try {
     const endpoint = type === 'dpps' 
@@ -61,7 +62,6 @@ app.post('/api/uploader/content', async (req, res) => {
   }
 });
 
-// Route C: Sync Selected Test/DPP to Database
 app.post('/api/uploader/sync', async (req, res) => {
   const { batchId, batchName, type, title, questions } = req.body;
 
@@ -82,7 +82,6 @@ app.post('/api/uploader/sync', async (req, res) => {
   }
 });
 
-// Route D: Get Live Content for Student Portal
 app.get('/api/uploader/live/:batchId/:type', async (req, res) => {
   const { batchId, type } = req.params;
   try {
@@ -93,12 +92,5 @@ app.get('/api/uploader/live/:batchId/:type', async (req, res) => {
   }
 });
 
-// Root Route Test
-app.get('/', (res, resOrReq) => {
-  const response = resOrReq.json ? resOrReq : res;
-  response.send('PW Quiz Portal Engine is Live & Running!');
-});
-
-// 4. Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
