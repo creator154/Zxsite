@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Schema Definition
+// Mongoose Schema
 const TestSchema = new mongoose.Schema({
   batchId: { type: String, required: true },
   batchName: { type: String },
@@ -22,18 +22,20 @@ const Test = mongoose.models.Test || mongoose.model('Test', TestSchema);
 
 // MongoDB Atlas Connection
 const MONGO_URI = process.env.MONGO_URI;
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB Atlas Connected Successfully'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
+if (MONGO_URI) {
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log('MongoDB Atlas Connected'))
+    .catch(err => console.error('DB Connection Error:', err));
+}
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('PW Quiz Portal Engine is Live & Running!');
+  res.send('PW Quiz Portal Backend Engine is Live!');
 });
 
 app.post('/api/uploader/batches', async (req, res) => {
   const { authToken } = req.body;
-  if (!authToken) return res.status(400).json({ success: false, message: 'Token is required' });
+  if (!authToken) return res.status(400).json({ success: false, message: 'Token required' });
 
   try {
     const response = await axios.get('https://api.penpencil.co/v3/batches/my-batches', {
@@ -41,13 +43,12 @@ app.post('/api/uploader/batches', async (req, res) => {
     });
     res.json({ success: true, batches: response.data.data || [] });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'PW API error or Invalid Token' });
+    res.status(500).json({ success: false, message: 'PW API Error' });
   }
 });
 
 app.post('/api/uploader/content', async (req, res) => {
   const { authToken, batchId, type } = req.body;
-
   try {
     const endpoint = type === 'dpps' 
       ? `https://api.penpencil.co/v2/batches/${batchId}/dpps`
@@ -58,13 +59,12 @@ app.post('/api/uploader/content', async (req, res) => {
     });
     res.json({ success: true, items: response.data.data || [] });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch contents' });
+    res.status(500).json({ success: false, message: 'Fetch Failed' });
   }
 });
 
 app.post('/api/uploader/sync', async (req, res) => {
   const { batchId, batchName, type, title, questions } = req.body;
-
   try {
     const newEntry = new Test({
       batchId,
@@ -74,11 +74,10 @@ app.post('/api/uploader/sync', async (req, res) => {
       totalQuestions: questions ? questions.length : 0,
       questions: questions || []
     });
-
     await newEntry.save();
-    res.json({ success: true, message: 'Content synced live to Student Portal!' });
+    res.json({ success: true, message: 'Synced successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Database save error' });
+    res.status(500).json({ success: false, message: 'Database Save Error' });
   }
 });
 
@@ -88,7 +87,7 @@ app.get('/api/uploader/live/:batchId/:type', async (req, res) => {
     const items = await Test.find({ batchId, type });
     res.json({ success: true, items });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error retrieving live content' });
+    res.status(500).json({ success: false, message: 'Database Query Error' });
   }
 });
 
