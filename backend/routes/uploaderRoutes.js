@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Path ko exact relative rakhein (single dot '.' ya double dot '..' dhyan se check karein)
+// Case-sensitive relative path
 const controller = require('../controllers/uploaderController');
 
 router.post('/batches', controller.getBatches);
