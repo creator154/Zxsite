@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose =кновен = require('mongoose'); // mongoose
+const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
@@ -16,12 +16,12 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('Database Connected Successfully!'))
   .catch((err) => console.error('Database connection error:', err));
 
-// API test route
+// Test API Route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working fine!' });
 });
 
-// Static files path from backend folder
+// Frontend Build Static Path
 const frontendPath = path.join(__dirname, '../frontend/build');
 app.use(express.static(frontendPath));
 
