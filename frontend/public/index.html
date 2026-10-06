@@ -5,115 +5,169 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quizard - Exam Preparation Platform</title>
 <style>
-:root{--bg:#f5f6fa;--card:#fff;--ink:#1f2430;--muted:#5d6577;--accent:#4f46e5;--line:#e3e6ee}
-@media (prefers-color-scheme:dark){:root{--bg:#12141a;--card:#1b1e27;--ink:#eceef5;--muted:#9aa2b5;--accent:#8b85ff;--line:#2a2e3b}}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
-header{text-align:center;padding:36px 16px 20px}
-header h1{margin:0;font-size:2.4rem}
-header p{margin:6px 0 0;color:var(--muted)}
-nav{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px 16px 20px}
-nav a{padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600}
-nav a span{font-size:.65rem;background:#ef4444;border-radius:4px;padding:1px 5px;margin-left:4px}
-main{max-width:960px;margin:0 auto;padding:0 16px 40px}
-h2{margin:32px 0 8px;font-size:1.5rem;border-bottom:2px solid var(--accent);padding-bottom:4px}
-h3{margin:16px 0 8px;font-size:1.1rem;color:var(--muted)}
-ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
-li a{display:block;padding:10px 14px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);text-decoration:none}
-li a:hover,li a:focus-visible{border-color:var(--accent);outline:none}
-footer{text-align:center;padding:24px 16px;color:var(--muted);border-top:1px solid var(--line)}
-footer a{color:var(--accent)}
+body{margin:0;font-family:Inter,Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;background:#f4f6f9;color:#2c3e50}
+a{color:inherit;text-decoration:none}
+header{background:linear-gradient(135deg,#2ecc71,#2db6a3);color:#fff;text-align:center;padding:80px 16px 120px;clip-path:polygon(0 0,100% 0,100% 88%,0 100%)}
+header h1{margin:0;font-size:4.4rem;font-weight:800;letter-spacing:-1px}
+header h1 span{color:#f39c12}
+header p{margin:24px 0 0;font-size:1.35rem}
+.bar{position:sticky;top:0;z-index:20;background:#fff;padding:20px 24px;display:flex;align-items:center;gap:20px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.menu-btn{position:relative;background:none;border:0;padding:6px;cursor:pointer}
+.menu-btn i{display:block;width:30px;height:5px;border-radius:3px;background:#2c3e50;margin:6px 0}
+.menu-btn b{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:#e00}
+.bar input{flex:1;min-width:0;border:3px solid #3498db;border-radius:40px;padding:14px 22px;font-size:1.1rem;outline:none}
+.bar input:focus{box-shadow:0 0 0 4px rgba(52,152,219,.2)}
+.drop{display:none;position:absolute;right:0;top:100%;background:#fff;border-radius:0 0 16px 16px;box-shadow:0 12px 30px rgba(0,0,0,.15);min-width:280px;padding:10px 0}
+.drop.show{display:block}
+.drop a{display:flex;align-items:center;gap:16px;padding:18px 28px;font-size:1.3rem}
+.drop a:hover{background:#f4f6f9}
+.drop svg{width:26px;height:26px;fill:#2c3e50}
+.new{color:#e00;font-size:1.1rem}
+main{padding:28px 24px 140px;max-width:900px;margin:0 auto}
+.card{background:#fff;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.08);margin-bottom:30px;overflow:hidden}
+.card>button{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;padding:44px 36px;cursor:pointer;font:inherit}
+.card h2{margin:0;color:#3498db;font-size:1.9rem;font-weight:700;text-align:left}
+.chev{width:32px;height:32px;stroke:#2c3e50;fill:none;stroke-width:2.5;transition:transform .2s;flex:none}
+.card.open .chev{transform:rotate(180deg)}
+.body{display:none;padding:0 28px 28px}
+.card.open .body{display:block}
+.body h3{margin:18px 0 10px;color:#666;font-size:1.15rem}
+.body a{display:block;padding:14px 18px;margin-bottom:8px;background:#f8f9fa;border-radius:12px;font-weight:600}
+.body a:hover{background:#eaf4fc;color:#2980b9}
+#results h2{color:#3498db;margin:0 0 14px;font-size:1.7rem}
+#results a{display:block;padding:26px 24px;margin-bottom:6px;background:#fafafa;border-radius:12px}
+#results a b{display:block;font-size:1.35rem;margin-bottom:10px}
+#results a span{color:#666;font-size:1.15rem}
+.join{position:fixed;right:20px;bottom:20px;z-index:30;display:flex;flex-direction:column;align-items:flex-end}
+.join em{font-style:normal;font-weight:800;font-size:1.4rem;color:#0088cc;background:#fff;padding:16px 32px;border-radius:40px;box-shadow:0 8px 24px rgba(0,0,0,.15);margin:0 -2px -22px 0;position:relative;z-index:1}
+.join span{width:96px;height:96px;border-radius:50%;background:#0088cc;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.join svg{width:46px;height:46px;fill:#fff}
+@media(min-width:700px){header h1{font-size:5.5rem}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Quizard</h1>
+  <h1><span>Q</span>uizard</h1>
   <p>Your Ultimate Exam Preparation Platform</p>
 </header>
-<nav>
-  <a href="/test-series">Test Series <span>NEW</span></a>
-  <a href="/dpp">DPP's</a>
-  <a href="/login">Login</a>
-  <a href="/signup">Sign Up</a>
-</nav>
-<main id="app"></main>
-<footer>
-  <p>Join us</p>
-  <p><a href="https://t.me/+5fxF6FcmAnJjZmM1">https://t.me/+5fxF6FcmAnJjZmM1</a></p>
-  <p>&copy; 2024 Quizard. All Rights Reserved.</p>
-</footer>
+
+<div class="bar">
+  <button class="menu-btn" id="mb" aria-label="Menu"><b></b><i></i><i></i><i></i></button>
+  <input id="q" type="search" placeholder="Search batches..." autocomplete="off">
+  <div class="drop" id="drop">
+    <a href="/test-series" data-p><svg viewBox="0 0 24 24"><path d="M5 2h14a1 1 0 0 1 1 1v15H6a1 1 0 0 0 0 2h14v2H6a3 3 0 0 1-3-3V4a2 2 0 0 1 2-2zm3 4v2h8V6z"/></svg>Test Series <span class="new">NEW</span></a>
+    <a href="/dpp" data-p><svg viewBox="0 0 24 24"><path d="M5 2h14a1 1 0 0 1 1 1v15H6a1 1 0 0 0 0 2h14v2H6a3 3 0 0 1-3-3V4a2 2 0 0 1 2-2zm3 4v2h8V6z"/></svg>DPP's</a>
+    <a href="/login" data-p><svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v3H2v4h8zm4-14h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6v-2h6V5h-6z"/></svg>Login</a>
+    <a href="/signup" data-p><svg viewBox="0 0 24 24"><path d="M9 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4 0-8 2-8 5v3h16v-3c0-3-4-5-8-5zm10-6V5h-2v3h-3v2h3v3h2v-3h3V8z"/></svg>Sign Up</a>
+  </div>
+</div>
+
+<main>
+  <div id="results" hidden></div>
+  <div id="app"></div>
+</main>
+
+<a class="join" href="https://t.me/+5fxF6FcmAnJjZmM1" target="_blank" rel="noopener">
+  <em>Join us</em>
+  <span><svg viewBox="0 0 24 24"><path d="M2.5 11.2l18.6-7.3c.9-.3 1.6.2 1.3 1.5l-3.2 15c-.2 1-.9 1.3-1.7.8l-4.8-3.6-2.3 2.3c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2L7.2 14 2.5 12.5c-1-.3-1-1 0-1.3z"/></svg></span>
+</a>
+
 <script>
-// [batchId, batchName] — add more entries to any list to extend the page.
-var DATA=[
+// Change BASE to "" if this file is hosted on the same server as the site.
+var BASE="https://quizard-v3-m-d396d1ad4209.herokuapp.com";
+
+// Only 2027 batches. Format: [batchId, batchName]
+var SECTIONS=[
  ["Boards Level Tests",[
-  ["For 10th",[
-   ["65df241600f257001881fbbd","Udaan 2026 (Class 10th)"],
-   ["65d898a774dfb200182ce11b","Udaan 2025"],
-   ["67bebb5d729924d2d4e98ccf","VICTORY 2.0 2026 (Class 10th)"],
-   ["67fc9f296743740c0bee0208","Udaan GOAT 2026"]]],
   ["For 12th",[
-   ["65ddb1c7c8969e0018c0b5f1","Parishram 2.0 2025"],
-   ["6774f509fd80ba9fd582cb96","PARISHRAM 2026 (Class 12th)"],
    ["697cddabf050baa08837223e","PARISHRAM 2027 (Class 12th)"],
-   ["65d8a0214592220018befbe7","Parishram 2025"]]]]],
+   ["6a0addccb37bd88a44438c49","Parishram Reloaded 2027"]]]]],
  ["JEE Tests",[
   ["For 11th",[
-   ["676e530042356584ca23370f","Arjuna JEE Hindi 2026"],
-   ["65ddb1c691431f0018a11f4a","Arjuna JEE 2.0 2025"],
-   ["676e4dee1ec923bc192f38c9","Arjuna JEE 2026"],
-   ["66d06980538987001826ce3d","Fighter JEE - 2025"]]],
+   ["698adab0c1c6f98cdb4b82df","Arjuna JEE Hindi 2027"]]],
   ["For 12th",[
-   ["65d862392b1da90018ad8f3b","Lakshya JEE 2025"],
-   ["65dc6fbabb55350018d555b7","Lakshya JEE 2026"],
-   ["696f6c332df7075d9676356c","Varun JEE Advanced 2026"],
-   ["6779345c20fa0756e4a7fd08","Lakshya JEE 2027"]]]]],
+   ["6779345c20fa0756e4a7fd08","Lakshya JEE 2027"],
+   ["678214ed9a04c400aad23145","Lakshya JEE Hindi 2027"]]]]],
  ["NEET Tests",[
   ["For 11th",[
-   ["676e5677418e84037bd6247c","Arjuna NEET 2026"],
-   ["66d06981c802e8001873b70e","Fighter NEET - 2025"],
-   ["69897f0ad7c19b7b2f7cc35f","Arjuna NEET 2027"],
-   ["65d749530531c20018ad953b","Arjuna NEET 2025"]]],
+   ["698adaafa0f64197c39c41af","Arjuna NEET hindi 2027"],
+   ["69897f0ad7c19b7b2f7cc35f","Arjuna NEET 2027"]]],
   ["For 12th",[
-   ["6990452f1f99767e04cfc383","UMMEED NEET 2026"],
-   ["65d75d320531c20018ade9bb","Lakshya NEET 2025"],
-   ["65dc6fbaf5bcd500180102cd","Lakshya NEET 2026"],
+   ["678214ed522793aab573f631","Lakshya NEET Hindi 2027"],
+   ["698ecf6afdd825b650c9c24d","Abhiyaan 700 + (NEET 2027)"],
    ["6779346f920e596fe7f0e247","Lakshya NEET 2027"]]]]],
  ["DROPPER Tests",[
-  ["For JEE",[
-   ["65d86238fb2810001895eab8","Prayas JEE 2025"],
-   ["67738e4a5787b05d8ec6e07f","Prayas JEE 2026"],
-   ["65ddb1c67520b70018241fe9","Prayas JEE 2.0 2025"]]],
   ["For NEET",[
-   ["65d7711b0de2ba001844bbab","Yakeen NEET 2025"],
-   ["67738e4c6e30ac746bcb34d7","Yakeen NEET 2026"],
-   ["69897f0a4c12aeb013d4ea52","Yakeen NEET 2027"]]]]]
+   ["698adaafee5f29171102c9ca","Yakeen NEET Hindi 2027"],
+   ["69897f0a4c12aeb013d4ea52","Yakeen NEET 2027"],
+   ["698ec79c420af7977e9c0f9e","Yakeen NEET 3.0 2027"],
+   ["6a71ab308afeef1b907294bd","Yakeen NEET Hindi 3.0 2027"],
+   ["6a38f418034b8baed508e6e4","Yakeen NEET Hindi 2.0 2027"]]]]]
 ];
 var OTHER=[
- ["66f50e9eabdb1cdb1f8f6d8b","CA Foundation Sampurna May 2025"],
- ["64c7a459c1549000181b863c","NDA Shaurya 1.0 2024"],
- ["6774ebb117f3b667e894c6a4","RADIANT 2026 (Class 9th)"],
- ["6774f509dcc961a5430bb4ba","UDAY 2026 (Class 11th)"],
+ ["69897f0a4c12aeb013d4ea52","Yakeen 2027"],
+ ["698ec4d979fb4aa23c1fd2c3","Yakeen 2.0 2027"],
+ ["6994351ae02b4900c7ac6906","Prayas 2.0 2027"],
  ["698ad35209494b495cfcc9c4","Prayas 2027"],
- ["69897f0a4c12aeb013d4ea52","Yakeen 2027"]
+ ["6994351acb3c3eb967dd60f5","Prayas 3.0 2027"]
 ];
-function list(items,type){
-  var ul=document.createElement("ul");
-  items.forEach(function(b){
-    var li=document.createElement("li"),a=document.createElement("a");
-    a.href="/batch/"+b[0]+"/"+encodeURIComponent(b[1])+"/"+type;
-    a.textContent=b[1];
-    li.appendChild(a);ul.appendChild(li);
-  });
-  return ul;
-}
-function add(tag,text){var e=document.createElement(tag);e.textContent=text;app.appendChild(e);}
+
 var app=document.getElementById("app");
-DATA.forEach(function(s){
-  add("h2",s[0]);
-  s[1].forEach(function(g){add("h3",g[0]);app.appendChild(list(g[1],"batch_test"));});
+function href(b,t){return BASE+"/batch/"+b[0]+"/"+encodeURIComponent(b[1])+"/"+t}
+function card(title,groups,type){
+  var c=document.createElement("div");c.className="card";
+  var btn=document.createElement("button");
+  btn.innerHTML='<h2></h2><svg class="chev" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg>';
+  btn.firstChild.textContent=title;
+  btn.onclick=function(){c.classList.toggle("open")};
+  var body=document.createElement("div");body.className="body";
+  groups.forEach(function(g){
+    if(g[0]){var h=document.createElement("h3");h.textContent=g[0];body.appendChild(h)}
+    g[1].forEach(function(b){
+      var a=document.createElement("a");a.href=href(b,type);a.textContent=b[1];body.appendChild(a);
+    });
+  });
+  c.appendChild(btn);c.appendChild(body);app.appendChild(c);
+}
+SECTIONS.forEach(function(s){card(s[0],s[1],"batch_test")});
+card("Other Batch Tests",[[null,OTHER]],"batch_test");
+card("Tests Series",[[null,OTHER]],"test_series");
+
+// Flat index for search
+var INDEX=[];
+SECTIONS.forEach(function(s){s[1].forEach(function(g){g[1].forEach(function(b){INDEX.push({b:b,cat:s[0]})})})});
+OTHER.forEach(function(b){INDEX.push({b:b,cat:"Other Batch Tests"})});
+
+var q=document.getElementById("q"),res=document.getElementById("results");
+q.addEventListener("input",function(){
+  var t=q.value.trim().toLowerCase();
+  if(!t){res.hidden=true;app.hidden=false;return}
+  var words=t.split(/\s+/),seen={},hits=INDEX.filter(function(x){
+    var n=x.b[1].toLowerCase();
+    var ok=words.every(function(w){return n.indexOf(w)>-1});
+    var k=x.b[0]+n;if(!ok||seen[k])return false;seen[k]=1;return true;
+  });
+  res.innerHTML="";
+  var h=document.createElement("h2");h.textContent="Search Results ("+hits.length+" batches)";res.appendChild(h);
+  hits.forEach(function(x){
+    var a=document.createElement("a");a.href=href(x.b,"batch_test");
+    var b=document.createElement("b");b.textContent=x.b[1];
+    var s=document.createElement("span");s.textContent=x.cat;
+    a.appendChild(b);a.appendChild(s);res.appendChild(a);
+  });
+  res.hidden=false;app.hidden=true;
 });
-add("h2","Other Batch Tests");app.appendChild(list(OTHER,"batch_test"));
-add("h2","Tests Series");app.appendChild(list(OTHER,"test_series"));
+
+// Menu
+var drop=document.getElementById("drop"),mb=document.getElementById("mb");
+Array.prototype.forEach.call(drop.querySelectorAll("a[data-p]"),function(a){a.href=BASE+a.getAttribute("href")});
+mb.onclick=function(e){e.stopPropagation();drop.classList.toggle("show")};
+document.addEventListener("click",function(){drop.classList.remove("show")});
+
+// Random header gradient (green / purple)
+var G=["linear-gradient(135deg,#2ecc71,#2db6a3)","linear-gradient(135deg,#6a11cb,#4a74b8)"];
+document.querySelector("header").style.background=G[Math.floor(Math.random()*G.length)];
 </script>
 </body>
 </html>
