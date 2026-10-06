@@ -1,14 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="PW Student Test & DPP Portal" />
-    <title>PW Student Portal</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
+    <title>Zxsite - PW Student Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #4f46e5; text-align: center; }
+        .card { background: #f8fafc; padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #4f46e5; }
+        button { background: #4f46e5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #4338ca; }
+        pre { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zxsite Test & DPP Portal</h1>
+        <p style="text-align: center; color: #666;">Connected to Backend Successfully 🚀</p>
+        
+        <div class="card">
+            <h3>Test Series / Batch Data</h3>
+            <button onclick="fetchBatchData()">Load Batch Tests</button>
+            <pre id="output">Click the button to fetch data...</pre>
+        </div>
+    </div>
+
+    <script>
+        async function fetchBatchData() {
+            const output = document.getElementById('output');
+            output.innerText = "Loading data from backend...";
+            try {
+                // Yahan apna sample batch ID daal kar test kar sakta hai
+                const batchId = "698adaafee5f29171102c9ca";
+                const batchName = "Yakeen NEET Hindi 2027";
+                const response = await fetch(`/batch/${batchId}/${batchName}/batch_test`);
+                const data = await response.json();
+                output.innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                output.innerText = "Error loading data: " + err.message;
+            }
+        }
+    </script>
+</body>
 </html>
