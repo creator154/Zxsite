@@ -59,7 +59,7 @@
                 <span>▼</span>
             </div>
             <div class="accordion-body" id="jee-container">
-                <!-- Dynamic Batch List will inject here -->
+                <p style="color: #64748b; font-size: 0.9rem;">Loading batches from server...</p>
             </div>
         </div>
 
@@ -70,14 +70,14 @@
                 <span>▼</span>
             </div>
             <div class="accordion-body" id="neet-container">
-                <!-- Dynamic Batch List will inject here -->
+                <p style="color: #64748b; font-size: 0.9rem;">Loading batches from server...</p>
             </div>
         </div>
 
         <div class="tests-output" id="globalOutput">Select a batch to load test series...</div>
     </div>
 
-    <!-- Slide Menu Drawer (Panel Removed) -->
+    <!-- Slide Menu Drawer -->
     <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
     <div class="drawer" id="drawer">
         <h3 style="padding: 0 20px; color: #4f46e5;">Zxsite Menu</h3>
@@ -86,42 +86,73 @@
     </div>
 
     <script>
-        const batchData = {
-            jee: [
-                { id: "698adaafee5f29171102c9ca", name: "Yakeen NEET Hindi 2027", target: "Dropper" },
-                { id: "sample_arjuna_jee", name: "Arjuna JEE (English/Hindi)", target: "Class 11th" },
-                { id: "sample_lakshya_jee", name: "Lakshya JEE (English/Hindi)", target: "Class 12th" },
-                { id: "sample_prayas_jee", name: "Prayas JEE (English/Hindi)", target: "Dropper" }
-            ],
-            neet: [
-                { id: "698adaafee5f29171102c9ca", name: "Yakeen NEET Hindi 2027", target: "Dropper" },
-                { id: "sample_yakeen_eng", name: "Yakeen NEET English Medium", target: "Dropper" }
-            ]
-        };
+        let allBatchesList = [];
 
-        function renderBatches() {
+        async function loadAllBatches() {
+            try {
+                const response =  await fetch('/all_batches');
+                const result = await response.json();
+                
+                // Assuming result contains data array of batches
+                allBatchesList = result.data || result.batches || [];
+                renderBatches(allBatchesList);
+            } catch (err) {
+                console.error("Failed to load batches:", err);
+                document.getElementById('jee-container').innerHTML = '<p style="color:red;">Error loading batches.</p>';
+                document.getElementById('neet-container').innerHTML = '<p style="color:red;">Error loading batches.</p>';
+            }
+        }
+
+        function renderBatches(batches) {
             const jeeContainer = document.getElementById('jee-container');
             const neetContainer = document.getElementById('neet-container');
 
-            jeeContainer.innerHTML = batchData.jee.map(b => `
-                <div class="batch-item" data-name="${b.name.toLowerCase()}">
-                    <div class="batch-info">
-                        <h4>${b.name}</h4>
-                        <p>Target: ${b.target}</p>
-                    </div>
-                    <button class="explore-btn" onclick="fetchTests('${b.id}', '${b.name}')">View Tests</button>
-                </div>
-            `).join('');
+            // Filter batches based on keywords for JEE and NEET
+            const jeeBatches = batches.filter(b => {
+                const name = (b.name || b.batchName || '').toLowerCase();
+                return name.includes('jee') || name.includes('arjuna') || name.includes('lakshya') || name.includes('prayas');
+            });
 
-            neetContainer.innerHTML = batchData.neet.map(b => `
-                <div class="batch-item" data-name="${b.name.toLowerCase()}">
-                    <div class="batch-info">
-                        <h4>${b.name}</h4>
-                        <p>Target: ${b.target}</p>
-                    </div>
-                    <button class="explore-btn" onclick="fetchTests('${b.id}', '${b.name}')">View Tests</button>
-                </div>
-            `).join('');
+            const neetBatches = batches.filter(b => {
+                const name = (b.name || b.batchName || '').toLowerCase();
+                return name.includes('neet') || name.includes('yakeen') || name.includes('biology');
+            });
+
+            if (jeeBatches.length === 0) {
+                jeeContainer.innerHTML = '<p style="color:#64748b;">No JEE batches found.</p>';
+            } else {
+                jeeContainer.innerHTML = jeeBatches.map(b => {
+                    const bId = b._id || b.id;
+                    const bName = b.name || b.batchName;
+                    return `
+                        <div class="batch-item" data-name="${bName.toLowerCase()}">
+                            <div class="batch-info">
+                                <h4>${bName}</h4>
+                                <p>Target: ${b.target || 'Exam Preparation'}</p>
+                            </div>
+                            <button class="explore-btn" onclick="fetchTests('${bId}', '${bName}')">View Tests</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (neetBatches.length === 0) {
+                neetContainer.innerHTML = '<p style="color:#64748b;">No NEET batches found.</p>';
+            } else {
+                neetContainer.innerHTML = neetBatches.map(b => {
+                    const bId = b._id || b.id;
+                    const bName = b.name || b.batchName;
+                    return `
+                        <div class="batch-item" data-name="${bName.toLowerCase()}">
+                            <div class="batch-info">
+                                <h4>${bName}</h4>
+                                <p>Target: ${b.target || 'Exam Preparation'}</p>
+                            </div>
+                            <button class="explore-btn" onclick="fetchTests('${bId}', '${bName}')">View Tests</button>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         function toggleDrawer() {
@@ -162,7 +193,8 @@
             }
         }
 
-        renderBatches();
+        // Load batches when page opens
+        loadAllBatches();
     </script>
 </body>
 </html>
