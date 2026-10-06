@@ -19,6 +19,9 @@ async function fetchFromPenpencil(url) {
         method: 'GET',
         headers: {
             'authorization': `Bearer ${token}`,
+            'client-id': '5eb33836b64da715bca77d3d',
+            'version-code': '530',
+            'device-type': 'web',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Referer': 'https://penpencil.xyz/',
             'Origin': 'https://penpencil.xyz/',
@@ -27,13 +30,27 @@ async function fetchFromPenpencil(url) {
     });
 
     if (!response.ok) {
+        const errText = await response.text();
+        console.error(`Upstream error details: ${response.status} - ${errText}`);
         throw new Error(`API responded with status: ${response.status}`);
     }
 
     return await response.json();
 }
 
-// Route for batch tests mirroring the structure found
+// Route to fetch all available batches automatically
+app.get('/all_batches', async (req, res) => {
+    try {
+        const targetUrl = `https://api.penpencil.xyz/v1/batches?mode=1&page=1`;
+        const data = await fetchFromPenpencil(targetUrl);
+        res.json(data);
+    } catch (error) {
+        console.error("Error fetching all batches:", error.message);
+        res.status(500).json({ error: "Failed to fetch batch list from upstream." });
+    }
+});
+
+// Route for batch tests
 app.get('/batch/:batchId/:batchName/batch_test', async (req, res) => {
     try {
         const { batchId } = req.params;
