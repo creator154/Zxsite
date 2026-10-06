@@ -1,9 +1,7 @@
 const path = require('path');
 
 // --- Yahan apna static folder set karein ---
-// Agar aap Vite use kar rahe hain toh 'dist', agar Create React App hai toh 'build' likhein:
 const frontendPath = path.join(__dirname, '../frontend/dist'); 
-// (Agar dist ki jagah build folder banta hai toh yahan 'build' kar dein)
 
 app.use(express.static(frontendPath));
 
