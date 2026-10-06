@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -10,23 +11,33 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Frontend static files serve karne ke liye
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public'))); 
 
-// Database Connection (MongoDB example)
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('Database Connected Successfully!'))
-.catch(err => console.error('DB Connection Error:', err));
+// Database Connection
+if (process.env.MONGO_URI) {
+    mongoose.connect(process.env.MONGO_URI)
+        .then(() => console.log('Database Connected Successfully!'))
+        .catch(err => console.error('DB Connection Error:', err));
+} else {
+    console.log('MONGO_URI environment variable is missing.');
+}
 
-// Example API Route
-app.use('/api/auth', require('./routes/authRoutes')); // Login/Admin routes
-app.use('/api/batches', require('./routes/batchRoutes')); // Test series & DPP routes
+// API Routes with fallback safety check
+try {
+    app.use('/api/auth', require('./routes/authRoutes'));
+} catch (e) {
+    console.error('Failed to load authRoutes:', e.message);
+}
 
-// Fallback to index.html for frontend routing
+try {
+    app.use('/api/batches', require('./routes/batchRoutes'));
+} catch (e) {
+    console.error('Failed to load batchRoutes:', e.message);
+}
+
+// Fallback for frontend
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
