@@ -77,30 +77,25 @@
         <div class="tests-output" id="globalOutput">Select a batch to load test series...</div>
     </div>
 
-    <!-- Slide Menu Drawer -->
+    <!-- Slide Menu Drawer (Panel Removed) -->
     <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
     <div class="drawer" id="drawer">
         <h3 style="padding: 0 20px; color: #4f46e5;">Zxsite Menu</h3>
         <a href="#" class="drawer-item">📚 Test Series</a>
         <a href="#" class="drawer-item">📝 DPP's</a>
-        <a href="#" class="drawer-item">🔑 Admin Panel</a>
     </div>
 
     <script>
-        // Database of batches categorized cleanly
         const batchData = {
             jee: [
-                { id: "arjuna_jee_eng_id_placeholder", name: "Arjuna JEE (English Medium)", target: "Class 11th" },
-                { id: "arjuna_jee_hin_id_placeholder", name: "Arjuna JEE (Hindi Medium)", target: "Class 11th" },
-                { id: "lakshya_jee_eng_id_placeholder", name: "Lakshya JEE (English Medium)", target: "Class 12th" },
-                { id: "lakshya_jee_hin_id_placeholder", name: "Lakshya JEE (Hindi Medium)", target: "Class 12th" },
-                { id: "prayas_jee_eng_id_placeholder", name: "Prayas JEE (English Medium)", target: "Dropper" },
-                { id: "prayas_jee_hin_id_placeholder", name: "Prayas JEE (Hindi Medium)", target: "Dropper" }
+                { id: "698adaafee5f29171102c9ca", name: "Yakeen NEET Hindi 2027", target: "Dropper" },
+                { id: "sample_arjuna_jee", name: "Arjuna JEE (English/Hindi)", target: "Class 11th" },
+                { id: "sample_lakshya_jee", name: "Lakshya JEE (English/Hindi)", target: "Class 12th" },
+                { id: "sample_prayas_jee", name: "Prayas JEE (English/Hindi)", target: "Dropper" }
             ],
             neet: [
-                { id: "yakeen_neet_eng_id_placeholder", name: "Yakeen NEET (English Medium)", target: "Dropper" },
-                { id: "698adaafee5f29171102c9ca", name: "Yakeen NEET Hindi 2027", target: "Dropper / Long Term" },
-                { id: "yakeen_neet_2026_dropper", name: "Yakeen NEET Dropper Batch", target: "Dropper" }
+                { id: "698adaafee5f29171102c9ca", name: "Yakeen NEET Hindi 2027", target: "Dropper" },
+                { id: "sample_yakeen_eng", name: "Yakeen NEET English Medium", target: "Dropper" }
             ]
         };
 
@@ -109,7 +104,7 @@
             const neetContainer = document.getElementById('neet-container');
 
             jeeContainer.innerHTML = batchData.jee.map(b => `
-                <div class="batch-item">
+                <div class="batch-item" data-name="${b.name.toLowerCase()}">
                     <div class="batch-info">
                         <h4>${b.name}</h4>
                         <p>Target: ${b.target}</p>
@@ -119,7 +114,7 @@
             `).join('');
 
             neetContainer.innerHTML = batchData.neet.map(b => `
-                <div class="batch-item">
+                <div class="batch-item" data-name="${b.name.toLowerCase()}">
                     <div class="batch-info">
                         <h4>${b.name}</h4>
                         <p>Target: ${b.target}</p>
@@ -139,6 +134,20 @@
             body.style.display = body.style.display === 'block' ? 'none' : 'block';
         }
 
+        function filterBatches() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const items = document.querySelectorAll('.batch-item');
+            
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
         async function fetchTests(batchId, batchName) {
             const output = document.getElementById('globalOutput');
             output.style.display = 'block';
@@ -153,7 +162,6 @@
             }
         }
 
-        // Initialize lists on load
         renderBatches();
     </script>
 </body>
