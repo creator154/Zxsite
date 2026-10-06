@@ -44,8 +44,8 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'API is working fine!' });
 });
 
-// Frontend Build Static Path (Assuming frontend is in root/frontend)
-const frontendPath = path.join(__dirname, 'frontend/build');
+// Frontend Build Static Path (Corrected path from backend/ to root/frontend/build)
+const frontendPath = path.join(__dirname, '../../frontend/build');
 app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {
