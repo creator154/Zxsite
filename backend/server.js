@@ -1,60 +1,67 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
-
 const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+// Middleware to parse JSON and urlencoded data
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || '';
+// Serve static frontend files if placed in public folder
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Database Connection
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('Database Connected Successfully!'))
-  .catch((err) => console.error('Database connection error:', err));
-
-// --- BATCHES API PROXY ROUTE ---
-app.get('/api/pw-batches', async (req, res) => {
-    try {
-        const pwToken = process.env.PW_JWT_TOKEN;
-        if (!pwToken) {
-            return res.status(500).json({ success: false, message: 'PW_JWT_TOKEN is missing in environment variables' });
+// Helper function for making requests with browser-like headers
+async function fetchFromPenpencil(url) {
+    const token = process.env.PW_JWT_TOKEN || '';
+    
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'authorization': `Bearer ${token}`,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://penpencil.xyz/',
+            'Origin': 'https://penpencil.xyz/',
+            'Accept': 'application/json, text/plain, */*'
         }
+    });
 
-        const response = await fetch('https://api.penpencil.xyz/v1/batches/active', {
-            headers: {
-                'authorization': `Bearer ${pwToken}`,
-                'client-id': '5eb33869ec53d00018512b9d',
-                'client-type': 'WEB',
-                'accept': 'application/json, text/plain, */*',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            }
-        });
+    if (!response.ok) {
+        throw new Error(`API responded with status: ${response.status}`);
+    }
 
-        const data = await response.json();
+    return await response.json();
+}
+
+// Route for batch tests mirroring the structure found
+app.get('/batch/:batchId/:batchName/batch_test', async (req, res) => {
+    try {
+        const { batchId } = req.params;
+        // Construct the actual target API URL using the batchId
+        const targetUrl = `https://api.penpencil.xyz/v1/batches/${batchId}/batch-tests`;
+        
+        const data = await fetchFromPenpencil(targetUrl);
         res.json(data);
     } catch (error) {
-        console.error('Error fetching batches:', error.message);
-        res.status(500).json({ success: false, message: 'Failed to fetch live batches from PW' });
+        console.error("Error fetching batch tests:", error.message);
+        res.status(500).json({ error: "Failed to fetch data due to upstream restrictions." });
     }
 });
 
-// Test API Route
-app.get('/api/test', (req, res) => {
-    res.json({ message: 'API is working fine!' });
-});
-
-// Frontend Build Static Path
-const frontendPath = path.join(process.cwd(), 'frontend/build');
-app.use(express.static(frontendPath));
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'));
+// Route for specific test data details
+app.get('/test_data/:batchId/:batchName/:testId/batch_test', async (req, res) => {
+    try {
+        const { batchId, testId } = req.params;
+        const targetUrl = `https://api.penpencil.xyz/v1/batches/${batchId}/tests/${testId}`;
+        
+        const data = await fetchFromPenpencil(targetUrl);
+        res.json(data);
+    } catch (error) {
+        console.error("Error fetching test data:", error.message);
+        res.status(500).json({ error: "Failed to fetch test details." });
+    }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
