@@ -1,46 +1,13 @@
-
-const express = require('express');
-const mongoose = require('mongoose');
 const path = require('path');
-require('dotenv').config();
 
-const app = express();
+// --- Yahan apna static folder set karein ---
+// Agar aap Vite use kar rahe hain toh 'dist', agar Create React App hai toh 'build' likhein:
+const frontendPath = path.join(__dirname, '../frontend/dist'); 
+// (Agar dist ki jagah build folder banta hai toh yahan 'build' kar dein)
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static(frontendPath));
 
-// Frontend static files serve karne ke liye
-app.use(express.static(path.join(__dirname, '../public'))); 
-
-// Database Connection
-if (process.env.MONGO_URI) {
-    mongoose.connect(process.env.MONGO_URI)
-        .then(() => console.log('Database Connected Successfully!'))
-        .catch(err => console.error('DB Connection Error:', err));
-} else {
-    console.log('MONGO_URI environment variable is missing.');
-}
-
-// API Routes with fallback safety check
-try {
-    app.use('/api/auth', require('./routes/authRoutes'));
-} catch (e) {
-    console.error('Failed to load authRoutes:', e.message);
-}
-
-try {
-    app.use('/api/batches', require('./routes/batchRoutes'));
-} catch (e) {
-    console.error('Failed to load batchRoutes:', e.message);
-}
-
-// Fallback for frontend
+// Fallback route taaki React Router ya page reload par error na aaye:
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public', 'index.html'));
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    res.sendFile(path.join(frontendPath, 'index.html'));
 });
