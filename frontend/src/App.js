@@ -10,16 +10,31 @@ function App() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch LIVE PW Batches
+  // Bulletproof Fetch Live PW Batches
   useEffect(() => {
     setLoading(true);
     axios.get('/api/pw-batches')
       .then(res => {
-        if (res.data.success && Array.isArray(res.data.batches)) {
-          setBatches(res.data.batches);
+        const responseData = res.data;
+        let batchList = [];
+
+        // Flexible parsing for any JSON format from backend
+        if (Array.isArray(responseData)) {
+          batchList = responseData;
+        } else if (Array.isArray(responseData.batches)) {
+          batchList = responseData.batches;
+        } else if (Array.isArray(responseData.data)) {
+          batchList = responseData.data;
+        } else if (responseData.data && Array.isArray(responseData.data.batches)) {
+          batchList = responseData.data.batches;
         }
+
+        setBatches(batchList);
       })
-      .catch(err => console.error("PW Live Fetch Error:", err))
+      .catch(err => {
+        console.error("PW Live Fetch Error:", err);
+        setBatches([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -27,7 +42,7 @@ function App() {
     setActiveBatch(batch);
     setContentType(type);
     const batchId = batch._id || batch.id;
-    window.history.pushState({}, '', `/batch/${batchId}/${encodeURIComponent(batch.name)}/${type}`);
+    window.history.pushState({}, '', `/batch/${batchId}/${encodeURIComponent(batch.name || batch.batchName)}/${type}`);
   };
 
   const handleBack = () => {
@@ -41,14 +56,15 @@ function App() {
       const batchId = activeBatch._id || activeBatch.id;
       axios.get(`/api/live/${batchId}/${contentType}`)
         .then(res => {
-          if (res.data.success) setItems(res.data.items || []);
+          const itemData = res.data;
+          setItems(itemData.items || itemData.data || (Array.isArray(itemData) ? itemData : []));
         })
         .catch(() => setItems([]));
     }
   }, [activeBatch, contentType]);
 
   const filteredBatches = batches.filter(b => {
-    const name = b.name || '';
+    const name = b.name || b.batchName || '';
     const exam = b.exam || b.category || '';
     const matchesCat = selectedCategory === 'ALL' || exam.toUpperCase().includes(selectedCategory);
     const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -106,7 +122,7 @@ function App() {
                     onClick={() => handleOpenBatch(batch, 'batch_test')}
                     style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', padding: '14px', cursor: 'pointer' }}
                   >
-                    <h4 style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#f8fafc' }}>{batch.name}</h4>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#f8fafc' }}>{batch.name || batch.batchName}</h4>
                     <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>{batch.language || 'PW Batch'}</p>
                   </div>
                 ))}
@@ -118,8 +134,18 @@ function App() {
             <button onClick={handleBack} style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', color: '#38bdf8', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', marginBottom: '14px' }}>
               ← Back
             </button>
-            <h3 style={{ color: '#fff' }}>{activeBatch.name}</h3>
-            {/* Batch items rendering */}
+            <h3 style={{ color: '#fff' }}>{activeBatch.name || activeBatch.batchName}</h3>
+            {items.length === 0 ? (
+              <p style={{ color: '#94a3b8' }}>No items found for this batch.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {items.map((item, idx) => (
+                  <div key={item._id || idx} style={{ backgroundColor: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                    <p style={{ margin: 0, fontSize: '13px' }}>{item.name || item.title}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
