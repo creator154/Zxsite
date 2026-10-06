@@ -3,55 +3,158 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Zxsite - PW Student Portal</title>
+    <title>Zxsite - Exam Preparation Platform</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #4f46e5; text-align: center; }
-        .card { background: #f8fafc; padding: 15px; margin: 15px 0; border-radius: 6px; border-left: 4px solid #4f46e5; }
-        select { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px; background: white; font-size: 16px; }
-        button { background: #4f46e5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; }
-        button:hover { background: #4338ca; }
-        pre { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 4px; overflow-x: auto; max-height: 400px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 0; color: #333; }
+        .hero { background: linear-gradient(135deg, #4f46e5, #3b82f6); color: white; padding: 30px 20px; text-align: center; }
+        .hero h1 { margin: 0; font-size: 2.5rem; font-weight: bold; }
+        .hero p { margin: 10px 0 0; font-size: 1.1rem; opacity: 0.9; }
+        
+        .main-container { max-width: 700px; margin: -20px auto 20px; padding: 0 15px; }
+        
+        .search-box-wrapper { background: white; padding: 10px 15px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; margin-bottom: 20px; }
+        .menu-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-right: 15px; color: #333; }
+        .search-input { width: 100%; border: none; outline: none; font-size: 1rem; color: #333; }
+        
+        .accordion { background: white; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+        .accordion-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: bold; font-size: 1.1rem; color: #1e293b; background: #fff; }
+        .accordion-header:hover { background: #f8fafc; }
+        .accordion-body { padding: 15px 20px; display: none; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+        
+        .batch-item { background: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #4f46e5; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .batch-info h4 { margin: 0 0 4px; color: #1e293b; font-size: 1rem; }
+        .batch-info p { margin: 0; font-size: 0.8rem; color: #64748b; }
+        .explore-btn { background: #4f46e5; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+        .explore-btn:hover { background: #4338ca; }
+
+        .tests-output { margin-top: 15px; background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto; display: none; }
+
+        /* Drawer */
+        .drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: white; box-shadow: 5px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s ease; padding-top: 20px; }
+        .drawer.open { left: 0; }
+        .drawer-item { padding: 15px 20px; display: block; color: #333; text-decoration: none; border-bottom: 1px solid #f1f5f9; font-weight: 500; }
+        .drawer-item:hover { background: #f8fafc; color: #4f46e5; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 999; }
+        .overlay.show { display: block; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Zxsite Test & DPP Portal</h1>
-        <p style="text-align: center; color: #666;">Select your batch to view tests 🚀</p>
-        
-        <div class="card">
-            <h3>Choose Batch</h3>
-            <label>Select Batch:</label>
-            <select id="batchSelect">
-                <option value="698adaafee5f29171102c9ca|Yakeen NEET Hindi 2027">Yakeen NEET Hindi 2027</option>
-                <!-- Yahan aur bhi batches add kiye ja sakte hain -->
-            </select>
-            <br><br>
-            <button onclick="fetchBatchData()">View Tests</button>
+
+    <div class="hero">
+        <h1>Zxsite</h1>
+        <p>Your Ultimate Exam Preparation Platform</p>
+    </div>
+
+    <div class="main-container">
+        <!-- Search & Menu Bar -->
+        <div class="search-box-wrapper">
+            <button class="menu-btn" onclick="toggleDrawer()">☰</button>
+            <input type="text" class="search-input" id="searchBar" placeholder="Search batches..." onkeyup="filterBatches()" />
         </div>
 
-        <div class="card">
-            <h3>Tests & DPPs:</h3>
-            <pre id="output">Select a batch and click view...</pre>
+        <!-- JEE Tests Category -->
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>⚡ JEE Tests (Arjuna, Lakshya, Prayas)</span>
+                <span>▼</span>
+            </div>
+            <div class="accordion-body" id="jee-container">
+                <!-- Dynamic Batch List will inject here -->
+            </div>
         </div>
+
+        <!-- NEET Tests Category -->
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>🩺 NEET Tests (Yakeen & Dropper Batches)</span>
+                <span>▼</span>
+            </div>
+            <div class="accordion-body" id="neet-container">
+                <!-- Dynamic Batch List will inject here -->
+            </div>
+        </div>
+
+        <div class="tests-output" id="globalOutput">Select a batch to load test series...</div>
+    </div>
+
+    <!-- Slide Menu Drawer -->
+    <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
+    <div class="drawer" id="drawer">
+        <h3 style="padding: 0 20px; color: #4f46e5;">Zxsite Menu</h3>
+        <a href="#" class="drawer-item">📚 Test Series</a>
+        <a href="#" class="drawer-item">📝 DPP's</a>
+        <a href="#" class="drawer-item">🔑 Admin Panel</a>
     </div>
 
     <script>
-        async function fetchBatchData() {
-            const selectedValue = document.getElementById('batchSelect').value;
-            const [batchId, batchName] = selectedValue.split('|');
-            const output = document.getElementById('output');
+        // Database of batches categorized cleanly
+        const batchData = {
+            jee: [
+                { id: "arjuna_jee_eng_id_placeholder", name: "Arjuna JEE (English Medium)", target: "Class 11th" },
+                { id: "arjuna_jee_hin_id_placeholder", name: "Arjuna JEE (Hindi Medium)", target: "Class 11th" },
+                { id: "lakshya_jee_eng_id_placeholder", name: "Lakshya JEE (English Medium)", target: "Class 12th" },
+                { id: "lakshya_jee_hin_id_placeholder", name: "Lakshya JEE (Hindi Medium)", target: "Class 12th" },
+                { id: "prayas_jee_eng_id_placeholder", name: "Prayas JEE (English Medium)", target: "Dropper" },
+                { id: "prayas_jee_hin_id_placeholder", name: "Prayas JEE (Hindi Medium)", target: "Dropper" }
+            ],
+            neet: [
+                { id: "yakeen_neet_eng_id_placeholder", name: "Yakeen NEET (English Medium)", target: "Dropper" },
+                { id: "698adaafee5f29171102c9ca", name: "Yakeen NEET Hindi 2027", target: "Dropper / Long Term" },
+                { id: "yakeen_neet_2026_dropper", name: "Yakeen NEET Dropper Batch", target: "Dropper" }
+            ]
+        };
+
+        function renderBatches() {
+            const jeeContainer = document.getElementById('jee-container');
+            const neetContainer = document.getElementById('neet-container');
+
+            jeeContainer.innerHTML = batchData.jee.map(b => `
+                <div class="batch-item">
+                    <div class="batch-info">
+                        <h4>${b.name}</h4>
+                        <p>Target: ${b.target}</p>
+                    </div>
+                    <button class="explore-btn" onclick="fetchTests('${b.id}', '${b.name}')">View Tests</button>
+                </div>
+            `).join('');
+
+            neetContainer.innerHTML = batchData.neet.map(b => `
+                <div class="batch-item">
+                    <div class="batch-info">
+                        <h4>${b.name}</h4>
+                        <p>Target: ${b.target}</p>
+                    </div>
+                    <button class="explore-btn" onclick="fetchTests('${b.id}', '${b.name}')">View Tests</button>
+                </div>
+            `).join('');
+        }
+
+        function toggleDrawer() {
+            document.getElementById('drawer').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+
+        function toggleAccordion(header) {
+            const body = header.nextElementSibling;
+            body.style.display = body.style.display === 'block' ? 'none' : 'block';
+        }
+
+        async function fetchTests(batchId, batchName) {
+            const output = document.getElementById('globalOutput');
+            output.style.display = 'block';
+            output.innerText = `Fetching tests for ${batchName}...`;
             
-            output.innerText = "Fetching tests...";
             try {
                 const response = await fetch(`/batch/${batchId}/${encodeURIComponent(batchName)}/batch_test`);
                 const data = await response.json();
                 output.innerText = JSON.stringify(data, null, 2);
             } catch (err) {
-                output.innerText = "Error loading data: " + err.message;
+                output.innerText = "Error loading tests: " + err.message;
             }
         }
+
+        // Initialize lists on load
+        renderBatches();
     </script>
 </body>
 </html>
