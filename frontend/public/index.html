@@ -8,32 +8,48 @@
         body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h1 { color: #4f46e5; text-align: center; }
-        .card { background: #f8fafc; padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #4f46e5; }
-        button { background: #4f46e5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        .card { background: #f8fafc; padding: 15px; margin: 15px 0; border-radius: 6px; border-left: 4px solid #4f46e5; }
+        input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px; }
+        button { background: #4f46e5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; }
         button:hover { background: #4338ca; }
-        pre { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        pre { background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 4px; overflow-x: auto; max-height: 400px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Zxsite Test & DPP Portal</h1>
-        <p style="text-align: center; color: #666;">Connected to Backend Successfully 🚀</p>
+        <p style="text-align: center; color: #666;">Dynamic Batch & Test Fetcher 🚀</p>
         
         <div class="card">
-            <h3>Test Series / Batch Data</h3>
-            <button onclick="fetchBatchData()">Load Batch Tests</button>
-            <pre id="output">Click the button to fetch data...</pre>
+            <h3>Fetch Batch Tests</h3>
+            <label>Batch ID:</label>
+            <input type="text" id="batchId" value="698adaafee5f29171102c9ca" placeholder="Enter Batch ID">
+            
+            <label>Batch Name:</label>
+            <input type="text" id="batchName" value="Yakeen NEET Hindi 2027" placeholder="Enter Batch Name">
+            
+            <button onclick="fetchBatchData()">Get Batch Tests</button>
+        </div>
+
+        <div class="card">
+            <h3>Response Output:</h3>
+            <pre id="output">Data will appear here...</pre>
         </div>
     </div>
 
     <script>
         async function fetchBatchData() {
+            const batchId = document.getElementById('batchId').value.trim();
+            const batchName = encodeURIComponent(document.getElementById('batchName').value.trim());
             const output = document.getElementById('output');
-            output.innerText = "Loading data from backend...";
+            
+            if (!batchId || !batchName) {
+                alert("Please enter both Batch ID and Name!");
+                return;
+            }
+
+            output.innerText = "Fetching data from backend...";
             try {
-                // Yahan apna sample batch ID daal kar test kar sakta hai
-                const batchId = "698adaafee5f29171102c9ca";
-                const batchName = "Yakeen NEET Hindi 2027";
                 const response = await fetch(`/batch/${batchId}/${batchName}/batch_test`);
                 const data = await response.json();
                 output.innerText = JSON.stringify(data, null, 2);
