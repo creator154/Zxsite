@@ -49,7 +49,7 @@
         <!-- Search & Menu Bar -->
         <div class="search-box-wrapper">
             <button class="menu-btn" onclick="toggleDrawer()">☰</button>
-            <input type="text" class="search-input" id="searchBar" placeholder="Search batches..." onkeyup="filterBatches()" />
+            <input type="text" class="search-input" id="searchBar" placeholder="Search batches..." oninput="filterBatches()" />
         </div>
 
         <!-- JEE Tests Category -->
@@ -86,20 +86,33 @@
     </div>
 
     <script>
-        let allBatchesList = [];
-
         async function loadAllBatches() {
             try {
-                const response =  await fetch('/all_batches');
+                const response = await fetch('/all_batches');
                 const result = await response.json();
                 
-                // Assuming result contains data array of batches
-                allBatchesList = result.data || result.batches || [];
-                renderBatches(allBatchesList);
+                let batches = [];
+                if (Array.isArray(result)) {
+                    batches = result;
+                } else if (Array.isArray(result.data)) {
+                    batches = result.data;
+                } else if (result.data && Array.isArray(result.data.data)) {
+                    batches = result.data.data;
+                } else if (result.data && Array.isArray(result.data.batches)) {
+                    batches = result.data.batches;
+                } else if (Array.isArray(result.batches)) {
+                    batches = result.batches;
+                }
+
+                if (batches.length === 0) {
+                    document.getElementById('jee-container').innerHTML = `<p style="color:#64748b; font-size:0.85rem; padding:5px;">Debug Response: ${JSON.stringify(result)}</p>`;
+                    return;
+                }
+
+                renderBatches(batches);
             } catch (err) {
                 console.error("Failed to load batches:", err);
-                document.getElementById('jee-container').innerHTML = '<p style="color:red;">Error loading batches.</p>';
-                document.getElementById('neet-container').innerHTML = '<p style="color:red;">Error loading batches.</p>';
+                document.getElementById('jee-container').innerHTML = '<p style="color:red;">Error loading batches from server.</p>';
             }
         }
 
@@ -107,52 +120,43 @@
             const jeeContainer = document.getElementById('jee-container');
             const neetContainer = document.getElementById('neet-container');
 
-            // Filter batches based on keywords for JEE and NEET
             const jeeBatches = batches.filter(b => {
-                const name = (b.name || b.batchName || '').toLowerCase();
-                return name.includes('jee') || name.includes('arjuna') || name.includes('lakshya') || name.includes('prayas');
+                const name = (b.name || b.batchName || b.title || '').toLowerCase();
+                return name.includes('jee') || name.includes('arjuna') || name.includes('lakshya') || name.includes('prayas') || !name.includes('neet');
             });
 
             const neetBatches = batches.filter(b => {
-                const name = (b.name || b.batchName || '').toLowerCase();
-                return name.includes('neet') || name.includes('yakeen') || name.includes('biology');
+                const name = (b.name || b.batchName || b.title || '').toLowerCase();
+                return name.includes('neet') || name.includes('yakeen') || name.includes('biology') || !name.includes('jee');
             });
 
-            if (jeeBatches.length === 0) {
-                jeeContainer.innerHTML = '<p style="color:#64748b;">No JEE batches found.</p>';
-            } else {
-                jeeContainer.innerHTML = jeeBatches.map(b => {
-                    const bId = b._id || b.id;
-                    const bName = b.name || b.batchName;
-                    return `
-                        <div class="batch-item" data-name="${bName.toLowerCase()}">
-                            <div class="batch-info">
-                                <h4>${bName}</h4>
-                                <p>Target: ${b.target || 'Exam Preparation'}</p>
-                            </div>
-                            <button class="explore-btn" onclick="fetchTests('${bId}', '${bName}')">View Tests</button>
+            jeeContainer.innerHTML = jeeBatches.map(b => {
+                const bId = b._id || b.id || b.batchId;
+                const bName = b.name || b.batchName || b.title || 'Unnamed Batch';
+                return `
+                    <div class="batch-item" data-name="${bName.toLowerCase()}">
+                        <div class="batch-info">
+                            <h4>${bName}</h4>
+                            <p>ID: ${bId}</p>
                         </div>
-                    `;
-                }).join('');
-            }
+                        <button class="explore-btn" onclick="fetchTests('${bId}', '${bName}')">View Tests</button>
+                    </div>
+                `;
+            }).join('');
 
-            if (neetBatches.length === 0) {
-                neetContainer.innerHTML = '<p style="color:#64748b;">No NEET batches found.</p>';
-            } else {
-                neetContainer.innerHTML = neetBatches.map(b => {
-                    const bId = b._id || b.id;
-                    const bName = b.name || b.batchName;
-                    return `
-                        <div class="batch-item" data-name="${bName.toLowerCase()}">
-                            <div class="batch-info">
-                                <h4>${bName}</h4>
-                                <p>Target: ${b.target || 'Exam Preparation'}</p>
-                            </div>
-                            <button class="explore-btn" onclick="fetchTests('${bId}', '${bName}')">View Tests</button>
+            neetContainer.innerHTML = neetBatches.map(b => {
+                const bId = b._id || b.id || b.batchId;
+                const bName = b.name || b.batchName || b.title || 'Unnamed Batch';
+                return `
+                    <div class="batch-item" data-name="${bName.toLowerCase()}">
+                        <div class="batch-info">
+                            <h4>${bName}</h4>
+                            <p>ID: ${bId}</p>
                         </div>
-                    `;
-                }).join('');
-            }
+                        <button class="explore-btn" onclick="fetchTests('${bId}', '${bName}')">View Tests</button>
+                    </div>
+                `;
+            }).join('');
         }
 
         function toggleDrawer() {
@@ -166,11 +170,11 @@
         }
 
         function filterBatches() {
-            const query = document.getElementById('searchBar').value.toLowerCase();
+            const query = document.getElementById('searchBar').value.toLowerCase().trim();
             const items = document.querySelectorAll('.batch-item');
             
             items.forEach(item => {
-                const name = item.getAttribute('data-name');
+                const name = item.getAttribute('data-name') || '';
                 if (name.includes(query)) {
                     item.style.display = 'flex';
                 } else {
@@ -193,7 +197,6 @@
             }
         }
 
-        // Load batches when page opens
         loadAllBatches();
     </script>
 </body>
