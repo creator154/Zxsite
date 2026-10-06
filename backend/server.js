@@ -9,7 +9,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static frontend files if placed in public folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Root route to prevent Cannot GET / error
+app.get('/', (req, res) => {
+    res.send("Zxsite Backend is Running Successfully!");
+});
 
 // Helper function for making requests with browser-like headers
 async function fetchFromPenpencil(url) {
@@ -37,7 +42,6 @@ async function fetchFromPenpencil(url) {
 app.get('/batch/:batchId/:batchName/batch_test', async (req, res) => {
     try {
         const { batchId } = req.params;
-        // Construct the actual target API URL using the batchId
         const targetUrl = `https://api.penpencil.xyz/v1/batches/${batchId}/batch-tests`;
         
         const data = await fetchFromPenpencil(targetUrl);
