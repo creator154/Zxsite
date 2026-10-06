@@ -8,13 +8,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static frontend files if placed in public folder
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Root route to prevent Cannot GET / error
-app.get('/', (req, res) => {
-    res.send("Zxsite Backend is Running Successfully!");
-});
+// Serve static frontend files from frontend/public folder
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 
 // Helper function for making requests with browser-like headers
 async function fetchFromPenpencil(url) {
@@ -64,6 +59,11 @@ app.get('/test_data/:batchId/:batchName/:testId/batch_test', async (req, res) =>
         console.error("Error fetching test data:", error.message);
         res.status(500).json({ error: "Failed to fetch test details." });
     }
+});
+
+// Catch-all route to serve index.html for frontend routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/public/index.html'));
 });
 
 app.listen(PORT, () => {
