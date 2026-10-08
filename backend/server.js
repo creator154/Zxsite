@@ -31,6 +31,7 @@ app.use(
 
 const FRONTEND_BUILD = path.join(
   __dirname,
+  '..',
   'frontend',
   'build'
 );
