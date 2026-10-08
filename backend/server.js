@@ -5,10 +5,6 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-/* =========================================================
-   CONFIG
-========================================================= */
-
 const PANEL_BACKEND =
   (
     process.env.PANEL_BACKEND_URL ||
@@ -21,6 +17,7 @@ const PANEL_BACKEND =
 ========================================================= */
 
 app.use(express.json());
+
 app.use(
   express.urlencoded({
     extended: true
@@ -29,16 +26,22 @@ app.use(
 
 
 /* =========================================================
-   FRONTEND
+   REACT BUILD
 ========================================================= */
 
+const FRONTEND_BUILD = path.join(
+  __dirname,
+  'frontend',
+  'build'
+);
+
+console.log(
+  'Frontend build path:',
+  FRONTEND_BUILD
+);
+
 app.use(
-  express.static(
-    path.join(
-      __dirname,
-      '../frontend/public'
-    )
-  )
+  express.static(FRONTEND_BUILD)
 );
 
 
@@ -56,19 +59,22 @@ async function fetchFromPanel(url) {
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'Accept': 'application/json'
+      Accept: 'application/json'
     }
   });
 
   const text = await response.text();
 
-  let data;
+  let data = {};
 
   try {
+
     data = text
       ? JSON.parse(text)
       : {};
+
   } catch (error) {
+
     console.error(
       'Panel returned invalid JSON:',
       text.slice(0, 500)
@@ -158,6 +164,30 @@ function extractList(data) {
     return data.data.batches;
   }
 
+  if (
+    data &&
+    data.data &&
+    Array.isArray(data.data.tests)
+  ) {
+    return data.data.tests;
+  }
+
+  if (
+    data &&
+    data.data &&
+    Array.isArray(data.data.dpps)
+  ) {
+    return data.data.dpps;
+  }
+
+  if (
+    data &&
+    data.data &&
+    Array.isArray(data.data.data)
+  ) {
+    return data.data.data;
+  }
+
   return [];
 }
 
@@ -165,14 +195,6 @@ function extractList(data) {
 /* =========================================================
    PUBLIC BATCHES
 ========================================================= */
-
-/*
-  React:
-  GET /api/pw-batches
-
-  Backend:
-  GET PANEL/api/public/batches
-*/
 
 app.get(
   '/api/pw-batches',
@@ -188,7 +210,12 @@ app.get(
       const batches =
         extractList(data);
 
-      res.json({
+      console.log(
+        'Public batches:',
+        batches.length
+      );
+
+      return res.json({
         success: true,
         batches
       });
@@ -200,12 +227,10 @@ app.get(
         error.message
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
-        error:
-          'Failed to load batches',
-        message:
-          error.message
+        error: 'Failed to load batches',
+        message: error.message
       });
     }
   }
@@ -215,18 +240,6 @@ app.get(
 /* =========================================================
    PUBLIC TEST / DPP
 ========================================================= */
-
-/*
-  React:
-  GET /api/live/:batchId/batch_test
-
-  React:
-  GET /api/live/:batchId/dpp
-
-  Panel:
-  GET /api/public/batches/:id/test
-  GET /api/public/batches/:id/dpp
-*/
 
 app.get(
   '/api/live/:batchId/:contentType',
@@ -246,39 +259,43 @@ app.get(
         contentType === 'test' ||
         contentType === 'tests'
       ) {
+
         type = 'test';
 
       } else if (
         contentType === 'dpp' ||
         contentType === 'dpps'
       ) {
+
         type = 'dpp';
 
       } else {
 
         return res.status(400).json({
           success: false,
-          error:
-            'Invalid content type'
+          error: 'Invalid content type'
         });
       }
-
 
       const targetUrl =
         `${PANEL_BACKEND}/api/public/batches/${encodeURIComponent(batchId)}/${type}`;
 
-
       const data =
-        await fetchFromPanel(
-          targetUrl
-        );
-
+        await fetchFromPanel(targetUrl);
 
       const items =
         extractList(data);
 
+      console.log(
+        'Public content:',
+        {
+          batchId,
+          type,
+          count: items.length
+        }
+      );
 
-      res.json({
+      return res.json({
         success: true,
         items
       });
@@ -290,12 +307,10 @@ app.get(
         error.message
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
-        error:
-          'Failed to load content',
-        message:
-          error.message
+        error: 'Failed to load content',
+        message: error.message
       });
     }
   }
@@ -305,17 +320,6 @@ app.get(
 /* =========================================================
    TEST DETAILS
 ========================================================= */
-
-/*
-  Existing frontend compatibility.
-
-  NOTE:
-  Panel backend currently exposes content through
-  /api/public/batches/:id/test.
-
-  We first load the batch content and find the requested
-  source/local test.
-*/
 
 app.get(
   '/test_data/:batchId/:batchName/:testId/batch_test',
@@ -328,48 +332,41 @@ app.get(
         testId
       } = req.params;
 
-
       const targetUrl =
         `${PANEL_BACKEND}/api/public/batches/${encodeURIComponent(batchId)}/test`;
 
-
       const data =
-        await fetchFromPanel(
-          targetUrl
-        );
-
+        await fetchFromPanel(targetUrl);
 
       const tests =
         extractList(data);
 
-
       const found =
         tests.find(item => {
 
-          const id = String(
-            item._id ||
-            item.id ||
-            item.sourceTestId ||
-            item.testId ||
-            ''
+          const id =
+            String(
+              item._id ||
+              item.id ||
+              item.sourceTestId ||
+              item.testId ||
+              ''
+            );
+
+          return (
+            id === String(testId)
           );
-
-          return id === String(testId);
-
         });
-
 
       if (!found) {
 
         return res.status(404).json({
           success: false,
-          error:
-            'Test not found'
+          error: 'Test not found'
         });
       }
 
-
-      res.json({
+      return res.json({
         success: true,
         data: found,
         test: found
@@ -382,12 +379,10 @@ app.get(
         error.message
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
-        error:
-          'Failed to fetch test details',
-        message:
-          error.message
+        error: 'Failed to fetch test details',
+        message: error.message
       });
     }
   }
@@ -395,28 +390,25 @@ app.get(
 
 
 /* =========================================================
-   HEALTH CHECK
+   HEALTH
 ========================================================= */
 
 app.get(
   '/api/health',
   (req, res) => {
 
-    res.json({
+    return res.json({
       success: true,
-      server:
-        'Public Site Backend',
-      panelBackend:
-        PANEL_BACKEND,
-      status:
-        'connected'
+      server: 'Public Site Backend',
+      panelBackend: PANEL_BACKEND,
+      status: 'connected'
     });
   }
 );
 
 
 /* =========================================================
-   CATCH ALL
+   REACT ROUTER FALLBACK
 ========================================================= */
 
 app.get(
@@ -425,8 +417,8 @@ app.get(
 
     res.sendFile(
       path.join(
-        __dirname,
-        '../frontend/public/index.html'
+        FRONTEND_BUILD,
+        'index.html'
       )
     );
   }
