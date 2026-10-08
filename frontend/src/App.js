@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
+const API = '';
+
 function App() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [batches, setBatches] = useState([]);
   const [activeBatch, setActiveBatch] = useState(null);
   const [contentType, setContentType] = useState('batch_test');
@@ -11,442 +11,121 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('ALL');
 
-  // --------------------------------------------------
-  // Helpers
-  // --------------------------------------------------
+  const [activeTest, setActiveTest] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [testError, setTestError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  const getBatchId = (batch) => {
-    if (!batch) return '';
+  const getId = (item) =>
+    String(item?._id || item?.id || item?.batchId || item?.sourceBatchId || item?.sourceTestId || '');
 
-    return String(
-      batch._id ||
-      batch.id ||
-      batch.batchId ||
-      batch.sourceBatchId ||
-      ''
-    );
-  };
+  const getName = (item) =>
+    item?.name || item?.title || item?.batchName || item?.testName || 'Untitled';
 
-  const getBatchName = (batch) => {
-    if (!batch) return 'Batch';
+  const extractList = (data) => {
+    if (Array.isArray(data)) return data;
 
-    return (
-      batch.name ||
-      batch.batchName ||
-      batch.title ||
-      'Batch'
-    );
-  };
-
-  const normalizeList = (data) => {
-    if (!data) return [];
-
-    if (Array.isArray(data)) {
-      return data;
+    for (const key of ['items', 'batches', 'tests', 'dpps', 'questions']) {
+      if (Array.isArray(data?.[key])) return data[key];
     }
 
-    if (Array.isArray(data.items)) {
-      return data.items;
+    for (const key of ['items', 'batches', 'tests', 'dpps', 'questions', 'data']) {
+      if (Array.isArray(data?.data?.[key])) return data.data[key];
     }
 
-    if (Array.isArray(data.batches)) {
-      return data.batches;
-    }
-
-    if (Array.isArray(data.tests)) {
-      return data.tests;
-    }
-
-    if (Array.isArray(data.dpps)) {
-      return data.dpps;
-    }
-
-    if (Array.isArray(data.data)) {
-      return data.data;
-    }
-
-    if (
-      data.data &&
-      typeof data.data === 'object'
-    ) {
-      if (Array.isArray(data.data.items)) {
-        return data.data.items;
-      }
-
-      if (Array.isArray(data.data.batches)) {
-        return data.data.batches;
-      }
-
-      if (Array.isArray(data.data.tests)) {
-        return data.data.tests;
-      }
-
-      if (Array.isArray(data.data.dpps)) {
-        return data.data.dpps;
-      }
-
-      if (Array.isArray(data.data.data)) {
-        return data.data.data;
-      }
-    }
+    if (Array.isArray(data?.data)) return data.data;
 
     return [];
   };
 
-  // --------------------------------------------------
-  // Load batches
-  // --------------------------------------------------
+  const questionListFrom = (data) => {
+    const candidates = [
+      data?.questions,
+      data?.questionList,
+      data?.question_list,
+      data?.data?.questions,
+      data?.data?.questionList,
+      data?.test?.questions,
+      data?.data?.test?.questions,
+      data?.result?.questions
+    ];
+
+    return candidates.find(Array.isArray) || [];
+  };
 
   const loadBatches = useCallback(async () => {
     setLoading(true);
     setError('');
 
     try {
-      const res = await axios.get(
-        '/api/pw-batches',
-        {
-          headers: {
-            Accept: 'application/json'
-          },
-          timeout: 20000
-        }
-      );
-
-      console.log(
-        'Batches API response:',
-        res.data
-      );
-
-      const list = normalizeList(res.data);
-
-      console.log(
-        'Normalized batches:',
-        list
-      );
-
-      setBatches(
-        Array.isArray(list)
-          ? list
-          : []
-      );
-
-    } catch (err) {
-      console.error(
-        'Batch fetch error:',
-        err
-      );
-
-      setBatches([]);
-      setError(
-        'Unable to load batches.'
-      );
-
+      const res = await axios.get(`${API}/api/pw-batches`);
+      setBatches(extractList(res.data));
+    } catch (e) {
+      setError('Batches load nahi ho paaye. Server check karo.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // --------------------------------------------------
-  // Find batch from current URL
-  // --------------------------------------------------
-
-  const restoreRoute = useCallback(
-    (batchList) => {
-      const path =
-        window.location.pathname;
-
-      const match =
-        path.match(
-          /^\/batch\/([^/]+)\/([^/]+)\/([^/]+)\/?$/
-        );
-
-      if (!match) {
-        setActiveBatch(null);
-        return;
-      }
-
-      const batchId =
-        decodeURIComponent(match[1]);
-
-      const typeFromUrl =
-        decodeURIComponent(match[3]);
-
-      console.log(
-        'Restoring route:',
-        {
-          batchId,
-          typeFromUrl
-        }
-      );
-
-      const batch =
-        batchList.find(
-          (b) =>
-            getBatchId(b) ===
-            String(batchId)
-        );
-
-      if (!batch) {
-        console.warn(
-          'Batch not found for URL:',
-          batchId
-        );
-
-        setActiveBatch(null);
-        return;
-      }
-
-      setActiveBatch(batch);
-
-      if (
-        typeFromUrl === 'dpp' ||
-        typeFromUrl === 'dpps'
-      ) {
-        setContentType('dpp');
-      } else {
-        setContentType('batch_test');
-      }
-    },
-    []
-  );
-
-  // --------------------------------------------------
-  // Initial load
-  // --------------------------------------------------
-
   useEffect(() => {
     loadBatches();
   }, [loadBatches]);
 
-  // --------------------------------------------------
-  // Restore route after batches load
-  // --------------------------------------------------
-
-  useEffect(() => {
-    if (batches.length > 0) {
-      restoreRoute(batches);
-    }
-  }, [
-    batches,
-    restoreRoute
-  ]);
-
-  // --------------------------------------------------
-  // Browser Back / Forward
-  // --------------------------------------------------
-
-  useEffect(() => {
-    const handlePopState = () => {
-      restoreRoute(batches);
-    };
-
-    window.addEventListener(
-      'popstate',
-      handlePopState
-    );
-
-    return () => {
-      window.removeEventListener(
-        'popstate',
-        handlePopState
-      );
-    };
-  }, [
-    batches,
-    restoreRoute
-  ]);
-
-  // --------------------------------------------------
-  // Open batch
-  // --------------------------------------------------
-
-  const handleOpenBatch = (
-    batch,
-    type = 'batch_test'
-  ) => {
-    const batchId =
-      getBatchId(batch);
-
-    if (!batchId) {
-      console.error(
-        'Batch ID missing:',
-        batch
-      );
-      return;
-    }
-
-    const batchName =
-      encodeURIComponent(
-        getBatchName(batch)
-      );
-
-    const cleanType =
-      type === 'dpp' ||
-      type === 'dpps'
-        ? 'dpp'
-        : 'batch_test';
-
-    console.log(
-      'Opening batch:',
-      {
-        batchId,
-        batchName,
-        cleanType
-      }
-    );
-
-    setItems([]);
-    setError('');
-    setContentType(cleanType);
+  const openBatch = (batch, type = 'batch_test') => {
     setActiveBatch(batch);
+    setContentType(type);
+    setActiveTest(null);
+    setTestError('');
+    setSubmitted(false);
+    setItems([]);
 
-    const newUrl =
-      `/batch/${encodeURIComponent(
-        batchId
-      )}/${batchName}/${cleanType}`;
+    const id = getId(batch);
+    const name = encodeURIComponent(getName(batch));
+    const urlType = type === 'dpp' ? 'dpp' : 'batch_test';
 
     window.history.pushState(
-      {
-        batchId,
-        type: cleanType
-      },
+      {},
       '',
-      newUrl
+      `/batch/${encodeURIComponent(id)}/${name}/${urlType}`
     );
   };
 
-  // --------------------------------------------------
-  // Back to home
-  // --------------------------------------------------
-
-  const handleBack = () => {
+  const goHome = () => {
     setActiveBatch(null);
+    setActiveTest(null);
     setItems([]);
+    setQuestions([]);
     setError('');
-
-    if (
-      window.location.pathname !== '/'
-    ) {
-      window.history.pushState(
-        {},
-        '',
-        '/'
-      );
-    }
+    setTestError('');
+    setSubmitted(false);
+    window.history.pushState({}, '', '/');
   };
 
-  // --------------------------------------------------
-  // Load Tests / DPPs
-  // --------------------------------------------------
-
   useEffect(() => {
-    if (!activeBatch) {
-      setItems([]);
-      return;
-    }
-
-    const batchId =
-      getBatchId(activeBatch);
-
-    if (!batchId) {
-      console.error(
-        'Active batch ID missing:',
-        activeBatch
-      );
-
-      setItems([]);
-      return;
-    }
+    if (!activeBatch) return;
 
     let cancelled = false;
 
     async function loadContent() {
       setContentLoading(true);
-      setItems([]);
       setError('');
 
-      const apiType =
-        contentType === 'dpp'
-          ? 'dpp'
-          : 'batch_test';
-
-      const url =
-        `/api/live/${encodeURIComponent(
-          batchId
-        )}/${apiType}`;
-
-      console.log(
-        'Loading content:',
-        url
-      );
-
       try {
-        const res =
-          await axios.get(
-            url,
-            {
-              headers: {
-                Accept:
-                  'application/json'
-              },
-              timeout: 20000
-            }
-          );
-
-        if (cancelled) return;
-
-        console.log(
-          'Content API response:',
-          res.data
+        const type = contentType === 'dpp' ? 'dpp' : 'batch_test';
+        const res = await axios.get(
+          `${API}/api/live/${encodeURIComponent(getId(activeBatch))}/${type}`
         );
 
-        const list =
-          normalizeList(res.data);
-
-        console.log(
-          'Normalized content:',
-          list
-        );
-
-        setItems(
-          Array.isArray(list)
-            ? list
-            : []
-        );
-
-      } catch (err) {
-        if (cancelled) return;
-
-        console.error(
-          'Content fetch error:',
-          err
-        );
-
-        if (
-          err.response
-        ) {
-          console.error(
-            'API status:',
-            err.response.status
-          );
-
-          console.error(
-            'API data:',
-            err.response.data
-          );
-        }
-
-        setItems([]);
-
-        setError(
-          'Unable to load content for this batch.'
-        );
-
+        if (!cancelled) setItems(extractList(res.data));
+      } catch (e) {
+        if (!cancelled) setError('Tests load nahi ho paaye.');
       } finally {
-        if (!cancelled) {
-          setContentLoading(false);
-        }
+        if (!cancelled) setContentLoading(false);
       }
     }
 
@@ -455,742 +134,366 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [
-    activeBatch,
-    contentType
-  ]);
+  }, [activeBatch, contentType]);
 
-  // --------------------------------------------------
-  // Filter batches
-  // --------------------------------------------------
+  const startTest = async (item) => {
+    setActiveTest(item);
+    setQuestions([]);
+    setAnswers({});
+    setCurrentQuestion(0);
+    setSubmitted(false);
+    setTestError('Questions load ho rahe hain...');
 
-  const filteredBatches =
-    batches.filter(
-      (batch) => {
-        const name =
-          String(
-            batch.name ||
-            batch.batchName ||
-            batch.title ||
-            ''
-          );
+    const batchId = getId(activeBatch);
+    const testId = getId(item);
+    const batchName = encodeURIComponent(getName(activeBatch));
 
-        const exam =
-          String(
-            batch.exam ||
-            batch.category ||
-            batch.subgroup ||
-            ''
-          );
+    try {
+      const res = await axios.get(
+        `${API}/test_data/${encodeURIComponent(batchId)}/${batchName}/${encodeURIComponent(testId)}/batch_test`
+      );
 
-        const matchesCategory =
-          selectedCategory === 'ALL' ||
-          exam
-            .toUpperCase()
-            .includes(
-              selectedCategory
-            );
+      const detail = res.data?.data || res.data?.test || res.data;
+      const list = questionListFrom(detail);
 
-        const matchesSearch =
-          name
-            .toLowerCase()
-            .includes(
-              searchQuery
-                .toLowerCase()
-            );
-
-        return (
-          matchesCategory &&
-          matchesSearch
+      if (!list.length) {
+        setTestError(
+          'Is test ke questions backend mein nahi mile. Uploader se questions aur options ke saath dobara import karna hoga.'
         );
+        return;
       }
-    );
 
-  // --------------------------------------------------
-  // UI
-  // --------------------------------------------------
+      setQuestions(list);
+      setTestError('');
+    } catch (e) {
+      setTestError(
+        e.response?.data?.message ||
+        'Test details nahi mil paayi. Backend API check karo.'
+      );
+    }
+  };
+
+  const chooseAnswer = (questionIndex, optionIndex) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionIndex]: optionIndex
+    }));
+  };
+
+  const optionText = (option) => {
+    if (typeof option === 'string') return option;
+    return option?.text || option?.value || option?.option || option?.name || '';
+  };
+
+  const optionsFor = (question) =>
+    question?.options ||
+    question?.choices ||
+    question?.answers ||
+    [];
+
+  const correctIndex = (question) => {
+    const correct =
+      question?.correctOptionIndex ??
+      question?.correctIndex ??
+      question?.answerIndex;
+
+    if (Number.isInteger(correct)) return correct;
+
+    const answer = question?.correctAnswer ?? question?.answer;
+    if (answer === undefined || answer === null) return -1;
+
+    const options = optionsFor(question);
+    return options.findIndex((o) => {
+      if (typeof o === 'string') return o === String(answer);
+      return String(o?._id || o?.id || o?.text || o?.value || o?.option) === String(answer);
+    });
+  };
+
+  const score = questions.reduce(
+    (total, q, index) =>
+      total + (answers[index] === correctIndex(q) ? 1 : 0),
+    0
+  );
+
+  const filteredBatches = batches.filter((batch) => {
+    const name = getName(batch).toLowerCase();
+    const exam = String(batch.exam || batch.category || '').toUpperCase();
+
+    return (
+      name.includes(search.toLowerCase()) &&
+      (category === 'ALL' || exam.includes(category))
+    );
+  });
+
+  const buttonStyle = {
+    padding: '10px 14px',
+    border: 'none',
+    borderRadius: 8,
+    background: '#0284c7',
+    color: '#fff',
+    cursor: 'pointer',
+    fontWeight: 700
+  };
+
+  const cardStyle = {
+    background: '#0f172a',
+    border: '1px solid #1e293b',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10
+  };
 
   return (
-    <div
-      style={{
-        backgroundColor:
-          '#070a12',
-        color: '#f1f5f9',
-        minHeight: '100vh',
-        fontFamily:
-          'sans-serif'
-      }}
-    >
-
-      {/* Header */}
-
-      <nav
-        style={{
-          backgroundColor:
-            '#0f172a',
-          padding:
-            '14px 20px',
-          display: 'flex',
-          justifyContent:
-            'space-between',
-          alignItems:
-            'center',
-          borderBottom:
-            '1px solid #1e293b'
-        }}
-      >
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems:
-              'center',
-            gap: '10px',
-            cursor: 'pointer'
-          }}
-          onClick={
-            handleBack
-          }
+    <div style={{
+      background: '#070a12',
+      color: '#f1f5f9',
+      minHeight: '100vh',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <header style={{
+        padding: '16px 20px',
+        background: '#0f172a',
+        borderBottom: '1px solid #1e293b',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <h2
+          onClick={goHome}
+          style={{ color: '#38bdf8', margin: 0, cursor: 'pointer', fontSize: 18 }}
         >
+          ⚡ QUIZARD PW LIVE
+        </h2>
+        <span style={{ color: '#22c55e', fontSize: 11 }}>● LIVE CONNECTED</span>
+      </header>
 
-          <span
-            style={{
-              fontSize:
-                '24px'
-            }}
-          >
-            ⚡
-          </span>
-
-          <h2
-            style={{
-              margin: 0,
-              fontSize:
-                '18px',
-              color:
-                '#38bdf8'
-            }}
-          >
-            QUIZARD PW LIVE
-          </h2>
-
-        </div>
-
-        <span
-          style={{
-            fontSize:
-              '11px',
-            color:
-              '#22c55e',
-            backgroundColor:
-              'rgba(34, 197, 94, 0.1)',
-            padding:
-              '4px 10px',
-            borderRadius:
-              '12px',
-            border:
-              '1px solid #22c55e'
-          }}
-        >
-          ● LIVE CONNECTED
-        </span>
-
-      </nav>
-
-      <div
-        style={{
-          maxWidth:
-            '1000px',
-          margin:
-            '0 auto',
-          padding:
-            '18px 14px'
-        }}
-      >
-
-        {/* ================= HOME ================= */}
-
+      <main style={{ maxWidth: 900, margin: 'auto', padding: 16 }}>
         {!activeBatch ? (
-
-          <div>
-
+          <>
             <input
-              type="text"
-              placeholder="🔍 Search live batches..."
-              value={
-                searchQuery
-              }
-              onChange={
-                (e) =>
-                  setSearchQuery(
-                    e.target.value
-                  )
-              }
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search batches..."
               style={{
-                width:
-                  '100%',
-                padding:
-                  '12px',
-                borderRadius:
-                  '10px',
-                backgroundColor:
-                  '#0f172a',
-                border:
-                  '1px solid #1e293b',
-                color:
-                  '#fff',
-                marginBottom:
-                  '14px',
-                boxSizing:
-                  'border-box'
+                width: '100%',
+                boxSizing: 'border-box',
+                padding: 13,
+                borderRadius: 9,
+                border: '1px solid #334155',
+                background: '#0f172a',
+                color: '#fff',
+                marginBottom: 14
               }}
             />
 
-            <div
-              style={{
-                display:
-                  'flex',
-                gap:
-                  '8px',
-                marginBottom:
-                  '18px'
-              }}
-            >
-
-              {[
-                'ALL',
-                'NEET',
-                'JEE'
-              ].map(
-                (cat) => (
-
-                  <button
-                    key={cat}
-                    onClick={() =>
-                      setSelectedCategory(
-                        cat
-                      )
-                    }
-                    style={{
-                      flex: 1,
-                      padding:
-                        '10px',
-                      borderRadius:
-                        '8px',
-                      border:
-                        'none',
-                      backgroundColor:
-                        selectedCategory ===
-                        cat
-                          ? '#0284c7'
-                          : '#0f172a',
-                      color:
-                        '#fff',
-                      fontWeight:
-                        '700',
-                      cursor:
-                        'pointer'
-                    }}
-                  >
-                    {cat}
-                  </button>
-
-                )
-              )}
-
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {['ALL', 'NEET', 'JEE'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  style={{
+                    ...buttonStyle,
+                    flex: 1,
+                    background: category === cat ? '#0284c7' : '#1e293b'
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
 
             {loading ? (
-
-              <p
-                style={{
-                  textAlign:
-                    'center',
-                  color:
-                    '#94a3b8'
-                }}
-              >
-                Fetching live batches...
-              </p>
-
-            ) : error &&
-              batches.length ===
-                0 ? (
-
-              <div
-                style={{
-                  textAlign:
-                    'center',
-                  padding:
-                    '40px',
-                  color:
-                    '#f87171'
-                }}
-              >
-
-                <p>
-                  {error}
-                </p>
-
-                <button
-                  onClick={
-                    loadBatches
-                  }
-                  style={{
-                    backgroundColor:
-                      '#0284c7',
-                    color:
-                      '#fff',
-                    border:
-                      'none',
-                    padding:
-                      '9px 16px',
-                    borderRadius:
-                      '8px',
-                    cursor:
-                      'pointer'
-                  }}
-                >
-                  Retry
-                </button>
-
-              </div>
-
-            ) : filteredBatches.length ===
-              0 ? (
-
-              <div
-                style={{
-                  textAlign:
-                    'center',
-                  padding:
-                    '40px',
-                  color:
-                    '#94a3b8'
-                }}
-              >
-
-                <p>
-                  No live batches found.
-                </p>
-
-              </div>
-
+              <p>Loading batches...</p>
+            ) : error ? (
+              <p style={{ color: '#f87171' }}>{error}</p>
+            ) : filteredBatches.length === 0 ? (
+              <p style={{ color: '#94a3b8' }}>No batches found.</p>
             ) : (
-
-              <div
-                style={{
-                  display:
-                    'grid',
-                  gridTemplateColumns:
-                    'repeat(2, 1fr)',
-                  gap:
-                    '12px'
-                }}
-              >
-
-                {filteredBatches.map(
-                  (
-                    batch,
-                    index
-                  ) => (
-
-                    <div
-                      key={
-                        getBatchId(
-                          batch
-                        ) ||
-                        index
-                      }
-                      onClick={() =>
-                        handleOpenBatch(
-                          batch,
-                          'batch_test'
-                        )
-                      }
-                      style={{
-                        backgroundColor:
-                          '#0f172a',
-                        border:
-                          '1px solid #1e293b',
-                        borderRadius:
-                          '12px',
-                        padding:
-                          '14px',
-                        cursor:
-                          'pointer',
-                        transition:
-                          'transform 0.15s ease'
-                      }}
-                      onMouseDown={
-                        (e) => {
-                          e.currentTarget.style.transform =
-                            'scale(0.98)';
-                        }
-                      }
-                      onMouseUp={
-                        (e) => {
-                          e.currentTarget.style.transform =
-                            'scale(1)';
-                        }
-                      }
-                    >
-
-                      <h4
-                        style={{
-                          margin:
-                            '0 0 6px 0',
-                          fontSize:
-                            '13px',
-                          color:
-                            '#f8fafc'
-                        }}
-                      >
-                        {getBatchName(
-                          batch
-                        )}
-                      </h4>
-
-                      <p
-                        style={{
-                          margin:
-                            0,
-                          fontSize:
-                            '11px',
-                          color:
-                            '#64748b'
-                        }}
-                      >
-                        {batch.language ||
-                          batch.exam ||
-                          'PW Batch'}
-                      </p>
-
-                    </div>
-
-                  )
-                )}
-
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))',
+                gap: 12
+              }}>
+                {filteredBatches.map((batch, index) => (
+                  <div
+                    key={getId(batch) || index}
+                    onClick={() => openBatch(batch)}
+                    style={{ ...cardStyle, cursor: 'pointer', margin: 0 }}
+                  >
+                    <strong>{getName(batch)}</strong>
+                    <p style={{ color: '#94a3b8', fontSize: 12 }}>
+                      {batch.language || batch.exam || 'PW Batch'}
+                    </p>
+                    <button style={buttonStyle}>Open Batch →</button>
+                  </div>
+                ))}
               </div>
+            )}
+          </>
+        ) : activeTest ? (
+          <>
+            <button onClick={() => {
+              setActiveTest(null);
+              setQuestions([]);
+              setTestError('');
+              setSubmitted(false);
+            }} style={{ ...buttonStyle, marginBottom: 16 }}>
+              ← Back to Tests
+            </button>
 
+            <h2>{getName(activeTest)}</h2>
+
+            {testError && (
+              <div style={{
+                ...cardStyle,
+                color: testError.startsWith('Questions load') ? '#facc15' : '#fca5a5'
+              }}>
+                {testError}
+              </div>
             )}
 
-          </div>
+            {questions.length > 0 && !submitted && (
+              <>
+                <p style={{ color: '#94a3b8' }}>
+                  Question {currentQuestion + 1} of {questions.length}
+                </p>
 
+                <div style={cardStyle}>
+                  <h3>
+                    {questions[currentQuestion]?.questionText ||
+                     questions[currentQuestion]?.question ||
+                     questions[currentQuestion]?.text ||
+                     `Question ${currentQuestion + 1}`}
+                  </h3>
+
+                  {optionsFor(questions[currentQuestion]).map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => chooseAnswer(currentQuestion, index)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: 12,
+                        marginTop: 8,
+                        borderRadius: 8,
+                        border: answers[currentQuestion] === index
+                          ? '1px solid #38bdf8'
+                          : '1px solid #334155',
+                        background: answers[currentQuestion] === index
+                          ? '#164e63'
+                          : '#111827',
+                        color: '#fff',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {String.fromCharCode(65 + index)}. {optionText(option)}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    disabled={currentQuestion === 0}
+                    onClick={() => setCurrentQuestion((n) => n - 1)}
+                    style={{ ...buttonStyle, opacity: currentQuestion === 0 ? 0.5 : 1 }}
+                  >
+                    Previous
+                  </button>
+
+                  {currentQuestion < questions.length - 1 ? (
+                    <button
+                      onClick={() => setCurrentQuestion((n) => n + 1)}
+                      style={buttonStyle}
+                    >
+                      Next →
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSubmitted(true)}
+                      style={{ ...buttonStyle, background: '#16a34a' }}
+                    >
+                      Submit Test
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {submitted && (
+              <div style={cardStyle}>
+                <h2>Test Result</h2>
+                <p>Total Questions: {questions.length}</p>
+                <p>Answered: {Object.keys(answers).length}</p>
+                <p>Correct: {score}</p>
+                <p>Score: {score} / {questions.length}</p>
+                <button
+                  onClick={() => {
+                    setActiveTest(null);
+                    setQuestions([]);
+                    setSubmitted(false);
+                  }}
+                  style={buttonStyle}
+                >
+                  Back to Tests
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-
-          /* ================= BATCH CONTENT ================= */
-
-          <div>
-
-            <button
-              onClick={
-                handleBack
-              }
-              style={{
-                backgroundColor:
-                  '#0f172a',
-                border:
-                  '1px solid #1e293b',
-                color:
-                  '#38bdf8',
-                padding:
-                  '8px 14px',
-                borderRadius:
-                  '8px',
-                cursor:
-                  'pointer',
-                marginBottom:
-                  '14px'
-              }}
-            >
+          <>
+            <button onClick={goHome} style={{ ...buttonStyle, marginBottom: 14 }}>
               ← Back
             </button>
 
-            <h3
-              style={{
-                color:
-                  '#fff',
-                marginBottom:
-                  '14px'
-              }}
-            >
-              {getBatchName(
-                activeBatch
-              )}
-            </h3>
+            <h2>{getName(activeBatch)}</h2>
 
-            {/* Tests / DPP switch */}
-
-            <div
-              style={{
-                display:
-                  'flex',
-                gap:
-                  '8px',
-                marginBottom:
-                  '16px'
-              }}
-            >
-
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
               <button
-                onClick={() => {
-
-                  setContentType(
-                    'batch_test'
-                  );
-
-                  const id =
-                    getBatchId(
-                      activeBatch
-                    );
-
-                  const name =
-                    encodeURIComponent(
-                      getBatchName(
-                        activeBatch
-                      )
-                    );
-
-                  window.history.pushState(
-                    {},
-                    '',
-                    `/batch/${encodeURIComponent(
-                      id
-                    )}/${name}/batch_test`
-                  );
-
-                }}
-                style={{
-                  flex: 1,
-                  padding:
-                    '10px',
-                  borderRadius:
-                    '8px',
-                  border:
-                    'none',
-                  backgroundColor:
-                    contentType ===
-                    'batch_test'
-                      ? '#0284c7'
-                      : '#0f172a',
-                  color:
-                    '#fff',
-                  fontWeight:
-                    '700',
-                  cursor:
-                    'pointer'
-                }}
+                onClick={() => setContentType('batch_test')}
+                style={{ ...buttonStyle, flex: 1, background: contentType === 'batch_test' ? '#0284c7' : '#1e293b' }}
               >
                 Tests
               </button>
-
               <button
-                onClick={() => {
-
-                  setContentType(
-                    'dpp'
-                  );
-
-                  const id =
-                    getBatchId(
-                      activeBatch
-                    );
-
-                  const name =
-                    encodeURIComponent(
-                      getBatchName(
-                        activeBatch
-                      )
-                    );
-
-                  window.history.pushState(
-                    {},
-                    '',
-                    `/batch/${encodeURIComponent(
-                      id
-                    )}/${name}/dpp`
-                  );
-
-                }}
-                style={{
-                  flex: 1,
-                  padding:
-                    '10px',
-                  borderRadius:
-                    '8px',
-                  border:
-                    'none',
-                  backgroundColor:
-                    contentType ===
-                    'dpp'
-                      ? '#16a34a'
-                      : '#0f172a',
-                  color:
-                    '#fff',
-                  fontWeight:
-                    '700',
-                  cursor:
-                    'pointer'
-                }}
+                onClick={() => setContentType('dpp')}
+                style={{ ...buttonStyle, flex: 1, background: contentType === 'dpp' ? '#16a34a' : '#1e293b' }}
               >
                 DPP
               </button>
-
             </div>
 
             {contentLoading ? (
-
-              <p
-                style={{
-                  textAlign:
-                    'center',
-                  color:
-                    '#94a3b8',
-                  padding:
-                    '25px'
-                }}
-              >
-                Loading{' '}
-                {contentType ===
-                'dpp'
-                  ? 'DPPs'
-                  : 'Tests'}
-                ...
-              </p>
-
+              <p>Loading content...</p>
             ) : error ? (
-
-              <div
-                style={{
-                  textAlign:
-                    'center',
-                  padding:
-                    '30px',
-                  color:
-                    '#f87171'
-                }}
-              >
-                {error}
-              </div>
-
-            ) : items.length ===
-              0 ? (
-
-              <div
-                style={{
-                  textAlign:
-                    'center',
-                  padding:
-                    '35px',
-                  color:
-                    '#94a3b8'
-                }}
-              >
-
-                <p>
-                  No{' '}
-                  {contentType ===
-                  'dpp'
-                    ? 'DPPs'
-                    : 'tests'}{' '}
-                  found for this batch.
-                </p>
-
-              </div>
-
+              <p style={{ color: '#f87171' }}>{error}</p>
+            ) : items.length === 0 ? (
+              <p style={{ color: '#94a3b8' }}>No {contentType === 'dpp' ? 'DPPs' : 'tests'} found.</p>
             ) : (
+              items.map((item, index) => (
+                <div key={getId(item) || index} style={cardStyle}>
+                  <strong>{getName(item)}</strong>
 
-              <div
-                style={{
-                  display:
-                    'flex',
-                  flexDirection:
-                    'column',
-                  gap:
-                    '8px'
-                }}
-              >
+                  {(item.totalQuestions || item.questions?.length) ? (
+                    <p style={{ color: '#94a3b8', fontSize: 12 }}>
+                      {item.totalQuestions || item.questions.length} Questions
+                    </p>
+                  ) : null}
 
-                {items.map(
-                  (
-                    item,
-                    idx
-                  ) => (
-
-                    <div
-                      key={
-                        item._id ||
-                        item.id ||
-                        item.sourceTestId ||
-                        idx
-                      }
-                      style={{
-                        backgroundColor:
-                          '#0f172a',
-                        padding:
-                          '12px',
-                        borderRadius:
-                          '8px',
-                        border:
-                          '1px solid #1e293b'
-                      }}
+                  {contentType === 'batch_test' && (
+                    <button
+                      onClick={() => startTest(item)}
+                      style={{ ...buttonStyle, marginTop: 8 }}
                     >
-
-                      <p
-                        style={{
-                          margin:
-                            0,
-                          fontSize:
-                            '13px',
-                          color:
-                            '#f8fafc'
-                        }}
-                      >
-                        {item.title ||
-                          item.name ||
-                          item.testName ||
-                          item.test_title ||
-                          'Untitled Test'}
-                      </p>
-
-                      {(
-                        item.totalQuestions ||
-                        item.questions?.length
-                      ) ? (
-
-                        <small
-                          style={{
-                            display:
-                              'block',
-                            marginTop:
-                              '5px',
-                            color:
-                              '#64748b'
-                          }}
-                        >
-                          {item.totalQuestions ||
-                            item.questions?.length}{' '}
-                          Questions
-                        </small>
-
-                      ) : null}
-
-                    </div>
-
-                  )
-                )}
-
-              </div>
-
+                      Start Test →
+                    </button>
+                  )}
+                </div>
+              ))
             )}
-
-          </div>
-
+          </>
         )}
-
-      </div>
-
+      </main>
     </div>
   );
 }
