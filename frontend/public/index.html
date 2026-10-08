@@ -1,169 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZX - Exam Preparation Platform</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;background:#f4f6f9;color:#2c3e50;font-size:15px}
-a{color:inherit;text-decoration:none}
-header{background:linear-gradient(135deg,#ff7a7a,#f2545b);color:#fff;text-align:center;padding:48px 16px 80px;clip-path:polygon(0 0,100% 0,100% 88%,0 100%)}
-header h1{margin:0;font-size:clamp(2.4rem,9vw,3.6rem);font-weight:800;letter-spacing:-1px}
-header h1 span{color:#f39c12}
-header p{margin:12px 0 0;font-size:1.05rem}
-.bar{position:sticky;top:0;z-index:20;background:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
-.menu-btn{position:relative;background:none;border:0;padding:4px;cursor:pointer}
-.menu-btn i{display:block;width:24px;height:4px;border-radius:2px;background:#2c3e50;margin:5px 0}
-.menu-btn b{position:absolute;top:-4px;right:-5px;width:12px;height:12px;border-radius:50%;background:#e00}
-.bar input{flex:1;min-width:0;border:2px solid #3498db;border-radius:30px;padding:10px 16px;font-size:1rem;outline:none}
-.bar input:focus{box-shadow:0 0 0 3px rgba(52,152,219,.2)}
-.drop{display:none;position:absolute;right:0;top:100%;background:#fff;border-radius:0 0 14px 14px;box-shadow:0 10px 24px rgba(0,0,0,.15);min-width:220px;padding:6px 0}
-.drop.show{display:block}
-.drop a{display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:1rem}
-.drop a:hover{background:#f4f6f9}
-.drop svg{width:20px;height:20px;fill:#2c3e50}
-.new{color:#e00;font-size:.8rem}
-main{padding:18px 16px 110px;max-width:900px;margin:0 auto}
-.card{background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden}
-.card>button{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;padding:22px 20px;cursor:pointer;font:inherit}
-.card h2{margin:0;color:#3498db;font-size:1.25rem;font-weight:700;text-align:left}
-.chev{width:22px;height:22px;stroke:#2c3e50;fill:none;stroke-width:2.5;transition:transform .2s;flex:none}
-.card.open .chev{transform:rotate(180deg)}
-.body{display:none;padding:0 16px 16px}
-.card.open .body{display:block}
-.body h3{margin:12px 0 8px;color:#666;font-size:.95rem}
-.body a{display:block;padding:12px 14px;margin-bottom:6px;background:#f8f9fa;border-radius:10px;font-weight:600;font-size:.95rem}
-.body a:hover{background:#eaf4fc;color:#2980b9}
-#results h2{color:#3498db;margin:0 0 10px;font-size:1.2rem}
-#results a{display:block;padding:16px;margin-bottom:6px;background:#fff;border-radius:10px}
-#results a b{display:block;font-size:1rem;margin-bottom:4px}
-#results a span{color:#666;font-size:.85rem}
-.join{position:fixed;right:14px;bottom:14px;z-index:30;display:flex;flex-direction:column;align-items:flex-end}
-.join em{font-style:normal;font-weight:800;font-size:1rem;color:#0088cc;background:#fff;padding:10px 20px;border-radius:30px;box-shadow:0 6px 18px rgba(0,0,0,.15);margin:0 -2px -14px 0;position:relative;z-index:1}
-.join span{width:60px;height:60px;border-radius:50%;background:#0088cc;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.25)}
-.join svg{width:28px;height:28px;fill:#fff}
-</style>
+  <meta charset="utf-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />
+
+  <meta
+    name="theme-color"
+    content="#070a12"
+  />
+
+  <meta
+    name="description"
+    content="ZX - Exam Preparation Platform"
+  />
+
+  <title>ZX - Exam Preparation Platform</title>
 </head>
+
 <body>
-<header>
-  <h1><span>Z</span>X</h1>
-  <p>Your Ultimate Exam Preparation Platform</p>
-</header>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
 
-<div class="bar">
-  <button class="menu-btn" id="mb" aria-label="Menu"><b></b><i></i><i></i><i></i></button>
-  <input id="q" type="search" placeholder="Search batches..." autocomplete="off">
-  <div class="drop" id="drop">
-    <a href="/test-series"><svg viewBox="0 0 24 24"><path d="M5 2h14a1 1 0 0 1 1 1v15H6a1 1 0 0 0 0 2h14v2H6a3 3 0 0 1-3-3V4a2 2 0 0 1 2-2zm3 4v2h8V6z"/></svg>Test Series <span class="new">NEW</span></a>
-    <a href="/dpp"><svg viewBox="0 0 24 24"><path d="M5 2h14a1 1 0 0 1 1 1v15H6a1 1 0 0 0 0 2h14v2H6a3 3 0 0 1-3-3V4a2 2 0 0 1 2-2zm3 4v2h8V6z"/></svg>DPP's</a>
-    <a href="/login"><svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v3H2v4h8zm4-14h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6v-2h6V5h-6z"/></svg>Login</a>
-    <a href="/signup"><svg viewBox="0 0 24 24"><path d="M9 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4 0-8 2-8 5v3h16v-3c0-3-4-5-8-5zm10-6V5h-2v3h-3v2h3v3h2v-3h3V8z"/></svg>Sign Up</a>
-  </div>
-</div>
-
-<main>
-  <div id="results" hidden></div>
-  <div id="app"></div>
-</main>
-
-<a class="join" href="https://t.me/Sumit_Verse" target="_blank" rel="noopener">
-  <em>Join us</em>
-  <span><svg viewBox="0 0 24 24"><path d="M2.5 11.2l18.6-7.3c.9-.3 1.6.2 1.3 1.5l-3.2 15c-.2 1-.9 1.3-1.7.8l-4.8-3.6-2.3 2.3c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2L7.2 14 2.5 12.5c-1-.3-1-1 0-1.3z"/></svg></span>
-</a>
-
-<script>
-// Only 2027 batches. Format: [batchId, batchName]
-var SECTIONS=[
- ["Boards Level Tests",[
-  ["For 12th",[
-   ["697cddabf050baa08837223e","PARISHRAM 2027 (Class 12th)"],
-   ["6a0addccb37bd88a44438c49","Parishram Reloaded 2027"]]]]],
- ["JEE Tests",[
-  ["For 11th",[
-   ["698adab0c1c6f98cdb4b82df","Arjuna JEE Hindi 2027"]]],
-  ["For 12th",[
-   ["6779345c20fa0756e4a7fd08","Lakshya JEE 2027"],
-   ["678214ed9a04c400aad23145","Lakshya JEE Hindi 2027"]]]]],
- ["NEET Tests",[
-  ["For 11th",[
-   ["698adaafa0f64197c39c41af","Arjuna NEET hindi 2027"],
-   ["69897f0ad7c19b7b2f7cc35f","Arjuna NEET 2027"]]],
-  ["For 12th",[
-   ["678214ed522793aab573f631","Lakshya NEET Hindi 2027"],
-   ["698ecf6afdd825b650c9c24d","Abhiyaan 700 + (NEET 2027)"],
-   ["6779346f920e596fe7f0e247","Lakshya NEET 2027"]]]]],
- ["DROPPER Tests",[
-  ["For NEET",[
-   ["698adaafee5f29171102c9ca","Yakeen NEET Hindi 2027"],
-   ["69897f0a4c12aeb013d4ea52","Yakeen NEET 2027"],
-   ["698ec79c420af7977e9c0f9e","Yakeen NEET 3.0 2027"],
-   ["6a71ab308afeef1b907294bd","Yakeen NEET Hindi 3.0 2027"],
-   ["6a38f418034b8baed508e6e4","Yakeen NEET Hindi 2.0 2027"]]]]]
-];
-var OTHER=[
- ["69897f0a4c12aeb013d4ea52","Yakeen 2027"],
- ["698ec4d979fb4aa23c1fd2c3","Yakeen 2.0 2027"],
- ["6994351ae02b4900c7ac6906","Prayas 2.0 2027"],
- ["698ad35209494b495cfcc9c4","Prayas 2027"],
- ["6994351acb3c3eb967dd60f5","Prayas 3.0 2027"]
-];
-
-var app=document.getElementById("app");
-// Relative links: they resolve on whatever server hosts this file.
-function href(b,t){return "/batch/"+b[0]+"/"+encodeURIComponent(b[1])+"/"+t}
-function card(title,groups,type){
-  var c=document.createElement("div");c.className="card";
-  var btn=document.createElement("button");
-  btn.innerHTML='<h2></h2><svg class="chev" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg>';
-  btn.firstChild.textContent=title;
-  btn.onclick=function(){c.classList.toggle("open")};
-  var body=document.createElement("div");body.className="body";
-  groups.forEach(function(g){
-    if(g[0]){var h=document.createElement("h3");h.textContent=g[0];body.appendChild(h)}
-    g[1].forEach(function(b){
-      var a=document.createElement("a");a.href=href(b,type);a.textContent=b[1];body.appendChild(a);
-    });
-  });
-  c.appendChild(btn);c.appendChild(body);app.appendChild(c);
-}
-SECTIONS.forEach(function(s){card(s[0],s[1],"batch_test")});
-card("Other Batch Tests",[[null,OTHER]],"batch_test");
-card("Tests Series",[[null,OTHER]],"test_series");
-
-// Flat index for search
-var INDEX=[];
-SECTIONS.forEach(function(s){s[1].forEach(function(g){g[1].forEach(function(b){INDEX.push({b:b,cat:s[0]})})})});
-OTHER.forEach(function(b){INDEX.push({b:b,cat:"Other Batch Tests"})});
-
-var q=document.getElementById("q"),res=document.getElementById("results");
-q.addEventListener("input",function(){
-  var t=q.value.trim().toLowerCase();
-  if(!t){res.hidden=true;app.hidden=false;return}
-  var words=t.split(/\s+/),seen={},hits=INDEX.filter(function(x){
-    var n=x.b[1].toLowerCase();
-    var ok=words.every(function(w){return n.indexOf(w)>-1});
-    var k=x.b[0]+n;if(!ok||seen[k])return false;seen[k]=1;return true;
-  });
-  res.innerHTML="";
-  var h=document.createElement("h2");h.textContent="Search Results ("+hits.length+" batches)";res.appendChild(h);
-  hits.forEach(function(x){
-    var a=document.createElement("a");a.href=href(x.b,"batch_test");
-    var b=document.createElement("b");b.textContent=x.b[1];
-    var s=document.createElement("span");s.textContent=x.cat;
-    a.appendChild(b);a.appendChild(s);res.appendChild(a);
-  });
-  res.hidden=false;app.hidden=true;
-});
-
-// Menu
-var drop=document.getElementById("drop"),mb=document.getElementById("mb");
-mb.onclick=function(e){e.stopPropagation();drop.classList.toggle("show")};
-document.addEventListener("click",function(){drop.classList.remove("show")});
-
-// Random header gradient (light red / purple)
-var G=["linear-gradient(135deg,#ff7a7a,#f2545b)","linear-gradient(135deg,#6a11cb,#4a74b8)"];
-document.querySelector("header").style.background=G[Math.floor(Math.random()*G.length)];
-</script>
+  <div id="root"></div>
 </body>
 </html>
